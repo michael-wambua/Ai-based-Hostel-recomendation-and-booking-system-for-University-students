@@ -107,8 +107,8 @@ _Search functionaliry and nearby facilities_
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/ai-hostel-booking.git
-cd ai-hostel-booking
+git clone https://github.com/michael-wambua/Ai-based-Hostel-recomendation-and-booking-system-for-University-students.git
+cd Ai-based-Hostel-recomendation-and-booking-system-for-University-students
 ```
 
 ### 2. Set Up Your Virtual Environment

@@ -46,3 +46,6 @@ xhtml2pdf==0.2.17
 XlsxWriter==3.2.2
 xlwt==1.3.0
 zopfli==0.2.3.post1
+mysqlclient==2.1.0
+mysql-connector-python==8.0.34
+mysql-connector==2.2.9
