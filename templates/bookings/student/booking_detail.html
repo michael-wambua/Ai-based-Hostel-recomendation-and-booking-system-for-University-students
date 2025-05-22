@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Booking Details</h1>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Hostel Information</h5>
+                    <p class="card-text">
+                        <strong>Name:</strong> {{ booking.room.hostel.name }}<br>
+                        <strong>Location:</strong> {{ booking.room.hostel.address }}<br>
+                        <strong>Description:</strong> {{ booking.room.hostel.description }}<br>
+                    </p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Room Details</h5>
+                    <p class="card-text">
+                        <strong>Room Number:</strong> {{ booking.room.room_number }}<br>
+                        <strong>Room Type:</strong> {{ booking.room.room_type }}<br>
+                        <strong>Capacity:</strong> {{ booking.room.capacity }} person(s)<br>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Booking Information</h5>
+                    <p class="card-text">
+                        <strong>Booking ID:</strong> {{ booking.id }}<br>
+                        <strong>Check-in Date:</strong> {{ booking.start_date }}<br>
+                        <strong>Check-out Date:</strong> {{ booking.end_date }}<br>
+                        <strong>Status:</strong> {{ booking.get_status_display }}</span><br>
+                        <strong>Booked On:</strong> {{ booking.booking_date|date:"M d, Y H:i" }}<br>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if booking.notes %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Additional Notes</h5>
+                    <p class="card-text">{{ booking.notes }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

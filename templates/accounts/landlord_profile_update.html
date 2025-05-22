@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Update Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{% url 'landlord_profile' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Current Profile</h4>
+                </div>
+                <div class="card-body text-center">
+                    {% if form.instance.profile_picture %}
+                        <img src="{{ form.instance.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                    <h4>{{ user.get_full_name }}</h4>
+                    <p class="text-muted">Landlord • {{ form.instance.get_property_ownership_type_display }}</p>
+                    <hr>
+                    <div class="text-start">
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Phone:</strong> {{ user.phone_number }}</p>
+                        <p><strong>Verification Status:</strong> 
+                            {% if profile.verification_status == 'APPROVED' %}
+                                <span class="badge bg-success">Verified</span>
+                            {% elif profile.verification_status == 'PENDING' %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% else %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Update Options</h4>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'update_personal_info' %}" class="btn btn-outline-primary w-100 mb-2">Update Personal Info</a>
+                    <a href="{% url 'update_profile_picture' %}" class="btn btn-outline-primary w-100 mb-2">Update Profile Picture</a>
+                    <a href="{% url 'verification_documents' %}" class="btn btn-outline-primary w-100 mb-2">Verification Documents</a>
+                    <a href="#" class="btn btn-outline-primary w-100">Change Password</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Update Landlord Profile</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3">Basic Information</h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.hostel_name.id_for_label }}" class="form-label">Hostel Name</label>
+                            {{ form.hostel_name }}
+                            {% if form.hostel_name.errors %}
+                                <div class="text-danger">
+                                    {{ form.hostel_name.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.property_ownership_type.id_for_label }}" class="form-label">Property Ownership Type</label>
+                            {{ form.property_ownership_type }}
+                            {% if form.property_ownership_type.errors %}
+                                <div class="text-danger">
+                                    {{ form.property_ownership_type.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Select whether you own this property or are managing it.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.years_of_experience.id_for_label }}" class="form-label">Years of Experience</label>
+                            {{ form.years_of_experience }}
+                            {% if form.years_of_experience.errors %}
+                                <div class="text-danger">
+                                    {{ form.years_of_experience.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                            {{ form.bio }}
+                            {% if form.bio.errors %}
+                                <div class="text-danger">
+                                    {{ form.bio.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Tell potential tenants about yourself and your property.</div>
+                        </div>
+                        
+                        <h5 class="mb-3">Contact Preferences</h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.preferred_contact_method.id_for_label }}" class="form-label">Preferred Contact Method</label>
+                            {{ form.preferred_contact_method }}
+                            {% if form.preferred_contact_method.errors %}
+                                <div class="text-danger">
+                                    {{ form.preferred_contact_method.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.available_hours.id_for_label }}" class="form-label">Available Hours</label>
+                            {{ form.available_hours }}
+                            {% if form.available_hours.errors %}
+                                <div class="text-danger">
+                                    {{ form.available_hours.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">When are you typically available? (e.g. Weekdays 9AM-5PM)</div>
+                        </div>
+                        
+                        <h5 class="mb-3">Social Media</h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.facebook_link.id_for_label }}" class="form-label">Facebook Link</label>
+                            {{ form.facebook_link }}
+                            {% if form.facebook_link.errors %}
+                                <div class="text-danger">
+                                    {{ form.facebook_link.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.twitter_link.id_for_label }}" class="form-label">Twitter Link</label>
+                            {{ form.twitter_link }}
+                            {% if form.twitter_link.errors %}
+                                <div class="text-danger">
+                                    {{ form.twitter_link.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.instagram_link.id_for_label }}" class="form-label">Instagram Link</label>
+                            {{ form.instagram_link }}
+                            {% if form.instagram_link.errors %}
+                                <div class="text-danger">
+                                    {{ form.instagram_link.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'landlord_profile' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Danger Zone</h4>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Actions here can't be undone. Please be careful.</p>
+                    <a href="#" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to deactivate your account? This action cannot be undone.')">Deactivate Account</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

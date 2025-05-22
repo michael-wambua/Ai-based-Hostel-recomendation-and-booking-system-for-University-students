@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Invoice Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <a href="{% url 'payments:student_payments' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Payments
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Invoice #{{ invoice.id }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-sm-6">
+                            <h6 class="mb-3">Booking Details:</h6>
+                            <div><strong>Booking ID:</strong> #{{ invoice.booking.id }}</div>
+                            <div><strong>Hostel:</strong> {{ invoice.booking.room.hostel.name }}</div>
+                            <div><strong>Room:</strong> {{ invoice.booking.room.name }}</div>
+                            <div><strong>Check-in:</strong> {{ invoice.booking.check_in_date|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6 class="mb-3">Invoice Details:</h6>
+                            <div><strong>Amount Due:</strong> Ksh{{ invoice.amount }}</div>
+                            <div>
+                                <strong>Status:</strong>
+                                {% if invoice.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif invoice.status == 'paid' %}
+                                    <span class="badge bg-info">Paid (Awaiting Confirmation)</span>
+                                {% elif invoice.status == 'confirmed' %}
+                                    <span class="badge bg-success">Confirmed</span>
+                                {% elif invoice.status == 'expired' %}
+                                    <span class="badge bg-danger">Expired</span>
+                                {% elif invoice.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                {% endif %}
+                            </div>
+                            <div><strong>Created:</strong> {{ invoice.created_at|date:"M d, Y" }}</div>
+                            <div>
+                                <strong>Due Date:</strong> {{ invoice.due_date|date:"M d, Y H:i" }}
+                                {% if invoice.status == 'pending' and invoice.days_remaining > 0 %}
+                                    <span class="badge bg-warning text-dark">{{ invoice.days_remaining }} days left</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    {% if invoice.status == 'pending' %}
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">Payment Instructions</h5>
+                            <p>Please make your payment using one of the methods below and enter the transaction details:</p>
+                            <ul>
+                                <li><strong>Bank Transfer:</strong> Account #: 123456789, Bank Name: Example Bank</li>
+                                <li><strong>Mobile Money:</strong> Send to number: +1234567890</li>
+                                <li><strong>Cash Deposit:</strong> Visit any branch of Example Bank</li>
+                            </ul>
+                            <p>After making your payment, submit the transaction details using the form below.</p>
+                        </div>
+
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            <h5 class="mb-3">Submit Payment Information</h5>
+                            <div class="mb-3">
+                                <label for="{{ form.transaction_code.id_for_label }}" class="form-label">Transaction Code</label>
+                                {{ form.transaction_code }}
+                                {% if form.transaction_code.errors %}
+                                    <div class="text-danger">{{ form.transaction_code.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                                {{ form.payment_method }}
+                                {% if form.payment_method.errors %}
+                                    <div class="text-danger">{{ form.payment_method.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">Additional Notes</label>
+                                {{ form.notes }}
+                                {% if form.notes.errors %}
+                                    <div class="text-danger">{{ form.notes.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Payment Information</button>
+                        </form>
+                    {% elif payment_exists %}
+                        <h5 class="mb-3">Payment Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div><strong>Transaction Code:</strong> {{ payment.transaction_code }}</div>
+                                <div><strong>Payment Method:</strong> {{ payment.payment_method }}</div>
+                                <div><strong>Payment Date:</strong> {{ payment.payment_date|date:"M d, Y H:i" }}</div>
+                                {% if payment.notes %}
+                                    <div><strong>Notes:</strong> {{ payment.notes }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {% if invoice.status == 'confirmed' %}
+                                    <div><strong>Confirmed Date:</strong> {{ payment.confirmed_date|date:"M d, Y H:i" }}</div>
+                                    <div><strong>Confirmed By:</strong> {{ payment.confirmed_by.get_full_name|default:payment.confirmed_by.username }}</div>
+                                {% elif invoice.status == 'paid' %}
+                                    <div class="alert alert-info">
+                                        Your payment is awaiting confirmation from the landlord.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Landlord Verification List{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        border: none;
+        transition: transform 0.2s;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        border-bottom: none;
+    }
+    
+    .card-header h6 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-back {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-back:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: translateX(-3px);
+    }
+    
+    .table thead th {
+        background-color: #f8f9fc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        color: #4e73df;
+        border-bottom: 2px solid #e3e6f0;
+    }
+    
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f1f5ff;
+    }
+    
+    .btn-action {
+        border-radius: 50rem;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-view {
+        background-color: #36b9cc;
+        border-color: #36b9cc;
+    }
+    
+    .btn-verify {
+        background-color: #1cc88a;
+        border-color: #1cc88a;
+    }
+    
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        color: #5a5c69;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #d1d3e2;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #4e73df !important;
+        border-color: #4e73df !important;
+        color: white !important;
+    }
+    
+    .dataTables_info {
+        color: #858796;
+    }
+    
+    .search-highlight {
+        background-color: #fffde7;
+        border-radius: 3px;
+        padding: 0 3px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-user-check mr-2"></i>Landlord Verification Requests
+                    </h6>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-sm btn-back">
+                        <i class="fas fa-arrow-left mr-1"></i> Back to Dashboard
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if landlords %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="verificationTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" width="5%">ID</th>
+                                        <th width="20%"><i class="fas fa-user mr-1"></i> Landlord Name</th>
+                                        <th width="20%"><i class="fas fa-envelope mr-1"></i> Email</th>
+                                        <th width="15%"><i class="fas fa-phone mr-1"></i> Phone</th>
+                                        <th width="15%"><i class="fas fa-calendar mr-1"></i> Submission Date</th>
+                                        <th class="text-center" width="25%"><i class="fas fa-tasks mr-1"></i> Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for landlord in landlords %}
+                                    <tr>
+                                        <td class="text-center font-weight-bold">{{ landlord.pk }}</td>
+                                        <td>{{ landlord.user.full_name }}</td>
+                                        <td>
+                                            <a href="mailto:{{ landlord.user.email }}" class="text-primary">
+                                                {{ landlord.user.email }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {% if landlord.user.phone_number %}
+                                                <a href="tel:{{ landlord.user.phone_number }}" class="text-secondary">
+                                                    {{ landlord.user.phone_number }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted"><i>Not provided</i></span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ landlord.user.date_joined|date:"M d, Y" }}</td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a href="{% url 'landlord_verification_detail' landlord.pk %}" class="btn btn-sm btn-action btn-view mx-1">
+                                                    <i class="fas fa-eye mr-1"></i> View Details
+                                                </a>
+                                                <a href="{% url 'verify_landlord' landlord.pk %}" class="btn btn-sm btn-action btn-verify mx-1">
+                                                    <i class="fas fa-clipboard-check mr-1"></i> Verify
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <h4 class="mt-3">No Pending Requests</h4>
+                            <p class="text-muted">There are no landlord verification requests that need your attention at this time.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#verificationTable').DataTable({
+            "order": [[ 4, "desc" ]], // Sort by submission date by default
+            "responsive": true,
+            "pageLength": 10,
+            "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+            "language": {
+                "search": "<i class='fas fa-search'></i> _INPUT_",
+                "searchPlaceholder": "Search requests...",
+                "lengthMenu": "Show _MENU_ entries",
+                "info": "Showing _START_ to _END_ of _TOTAL_ requests",
+                "infoEmpty": "Showing 0 to 0 of 0 requests",
+                "infoFiltered": "(filtered from _MAX_ total requests)",
+                "zeroRecords": "No matching records found",
+                "paginate": {
+                    "first": "<i class='fas fa-angle-double-left'></i>",
+                    "last": "<i class='fas fa-angle-double-right'></i>",
+                    "next": "<i class='fas fa-angle-right'></i>",
+                    "previous": "<i class='fas fa-angle-left'></i>"
+                }
+            },
+            "dom": '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center"f>>tip',
+            "drawCallback": function() {
+                $('.dataTables_paginate > .pagination').addClass('pagination-sm');
+            },
+            "initComplete": function() {
+                // Add custom search highlight
+                var api = this.api();
+                var searchBox = $('.dataTables_filter input');
+                
+                searchBox.off('keyup.DT search.DT');
+                
+                searchBox.on('keyup', function() {
+                    api.search(this.value).draw();
+                    
+                    if(this.value) {
+                        $('#verificationTable tbody').highlight(this.value, 'search-highlight');
+                    } else {
+                        $('#verificationTable tbody').unhighlight();
+                    }
+                });
+            }
+        });
+        
+        // Add highlight plugin if not already available
+        if(!$.fn.highlight) {
+            jQuery.fn.highlight = function(str, className) {
+                var regex = new RegExp(str, "gi");
+                return this.each(function() {
+                    $(this).contents().filter(function() {
+                        return this.nodeType == 3 && regex.test(this.nodeValue);
+                    }).replaceWith(function() {
+                        return (this.nodeValue || "").replace(regex, function(match) {
+                            return "<span class=\"" + className + "\">" + match + "</span>";
+                        });
+                    });
+                });
+            };
+            
+            jQuery.fn.unhighlight = function() {
+                return this.find("span.search-highlight").each(function() {
+                    var parent = this.parentNode;
+                    parent.replaceChild(this.firstChild, this);
+                    parent.normalize();
+                }).end();
+            };
+        }
+    });
+</script>
+{% endblock %}

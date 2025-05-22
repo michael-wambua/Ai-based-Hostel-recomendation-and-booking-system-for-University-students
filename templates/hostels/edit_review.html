@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Review - {{ hostel.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h2>Edit Your Review</h2>
+            <p>For {{ hostel.name }}</p>
+            
+            <form method="post" enctype="multipart/form-data" action="{% url 'hostel_reviews' hostel.id %}">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.rating.id_for_label }}" class="form-label">Rating</label>
+                    {{ form.rating }}
+                    {% if form.rating.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.rating.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.title.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.content.id_for_label }}" class="form-label">Review</label>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.content.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <h4 class="mb-3">Photos</h4>
+                {{ formset.management_form }}
+                <div class="row" id="image-formset">
+                    {% for form in formset %}
+                        <div class="col-md-4 mb-3 formset-row">
+                            <div class="card">
+                                <div class="card-body">
+                                    {{ form.id }}
+                                    {% if form.instance.image %}
+                                        <img src="{{ form.instance.image.url }}" class="img-fluid mb-2" alt="Review image">
+                                    {% endif %}
+                                    
+                                    <div class="mb-2">
+                                        {{ form.image }}
+                                        {% if form.image.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.image.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="form-check">
+                                        {{ form.DELETE }}
+                                        <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">
+                                            Delete this image
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'hostel_reviews' hostel.id %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Update Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

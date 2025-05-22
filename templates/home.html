@@ -1,0 +1,634 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Smart Hostel Finder - AI-Powered Recommendations{% endblock %}
+
+{% block content %}
+<!-- Enhanced Hero Section with Better Gradient and Layout -->
+<div class="hero-section py-5" style="background: linear-gradient(135deg,rgb(0, 122, 255) 0%,rgb(91, 80, 187) 50%,rgb(69, 69, 223) 100%);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-white mb-3">Find Your Perfect Student Hostel</h1>
+                <p class="lead text-light mb-4">Our AI matches you with the ideal accommodation based on your preferences, budget, and location needs.</p>
+
+                <!-- Enhanced Feature highlights with better icons -->
+                <div class="d-flex flex-column gap-3 mb-4 text-white">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-robot text-warning fs-5"></i>
+                        </div>
+                        <span class="fw-medium">Personalized AI recommendations</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-lightning-charge text-warning fs-5"></i>
+                        </div>
+                        <span class="fw-medium">Secure instant bookings</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-shield-check text-warning fs-5"></i>
+                        </div>
+                        <span class="fw-medium">Verified reviews from real students</span>
+                    </div>
+                </div>
+
+                {% if not user.is_authenticated %}
+                <div class="mt-4 d-flex flex-wrap gap-3">
+                    <a href="{% url 'login' %}" class="btn btn-warning btn-lg shadow-sm fw-medium">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Log In
+                    </a>
+                    <a href="{% url 'register_student' %}" class="btn btn-outline-light btn-lg shadow-sm fw-medium">
+                        <i class="bi bi-person-plus me-2"></i>Register
+                    </a>
+                </div>
+                {% else %}
+                <div class="mt-4 d-flex flex-wrap gap-3">
+                    <a href="{% url 'hostel_list' %}" class="btn btn-warning btn-lg shadow-sm fw-medium">
+                        <i class="bi bi-search me-2"></i>Find Hostels
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-lg shadow-sm fw-medium">
+                        <i class="bi bi-collection me-2"></i>My Bookings
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 mt-5 mt-lg-0">
+                <!-- Enhanced image container with better visual treatment -->
+                <div class="p-3 bg-white bg-opacity-10 rounded-4 shadow-lg transform-hover">
+                    <img src="{% static 'images/hostel.jpg' %}" alt="Student Hostel" class="img-fluid rounded-3"
+                        style="width: 100%; max-height: 450px; object-fit: cover;">
+                    <div class="position-absolute bottom-0 end-0 m-4">
+                        <span class="badge bg-warning px-3 py-2 rounded-pill fw-medium shadow">Trusted by 10,000+ students</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Improved Search Bar Section -->
+<div class="container-fluid bg-white py-4 shadow-sm">
+    <div class="container">
+        <div class="card border-0 shadow">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3 text-center text-primary">Find Available Hostels</h5>
+                <form class="row g-3 align-items-end" action="{% url 'hostel_list' %}" method="get">
+                    <div class="col-md-4">
+                        <label for="destination" class="form-label fw-medium">Location</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-geo-alt text-primary"></i></span>
+                            <select class="form-select" id="destination">
+                                <option selected>Select a location...</option>
+                                <option>Nairobi</option>
+                                <option>Karatina</option>
+                                <option>Mombasa</option>
+                                <option>Kisumu</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="checkIn" class="form-label fw-medium">Check-in Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-calendar3 text-primary"></i></span>
+                            <input type="date" class="form-control" id="checkIn">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="semester" class="form-label fw-medium">Semester</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-calendar-range text-primary"></i></span>
+                            <select class="form-select" id="semester">
+                                <option selected>Select semester...</option>
+                                <option>First Semester</option>
+                                <option>Second Semester</option>
+                                <option>Full Academic Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-medium">
+                            <i class="bi bi-search me-2"></i>Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Improved How It Works Section -->
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-2">Simple Process</span>
+        <h2 class="fw-bold">How Our AI Finds Your Perfect Hostel</h2>
+        <p class="text-muted mx-auto" style="max-width: 600px;">Our intelligent system analyzes thousands of properties to find your ideal student accommodation in 4 easy steps</p>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm hover-card position-relative">
+                <div class="position-absolute top-0 start-0 p-3">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 36px; height: 36px;">1</div>
+                </div>
+                <div class="card-body text-center p-4 pt-5">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3" style="width: 70px; height: 70px;">
+                        <i class="bi bi-person-lines-fill text-primary fs-3 m-auto"></i>
+                    </div>
+                    <h3 class="h5 card-title fw-bold">Tell Us Your Style</h3>
+                    <p class="card-text text-muted">Share your preferences, budget, and must-have amenities for your ideal hostel.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm hover-card position-relative">
+                <div class="position-absolute top-0 start-0 p-3">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 36px; height: 36px;">2</div>
+                </div>
+                <div class="card-body text-center p-4 pt-5">
+                    <div class="rounded-circle bg-success bg-opacity-10 p-3 d-inline-flex mb-3" style="width: 70px; height: 70px;">
+                        <i class="bi bi-cpu text-success fs-3 m-auto"></i>
+                    </div>
+                    <h3 class="h5 card-title fw-bold">AI Analysis</h3>
+                    <p class="card-text text-muted">Our AI analyzes thousands of hostels and reviews to find your perfect matches.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm hover-card position-relative">
+                <div class="position-absolute top-0 start-0 p-3">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 36px; height: 36px;">3</div>
+                </div>
+                <div class="card-body text-center p-4 pt-5">
+                    <div class="rounded-circle bg-info bg-opacity-10 p-3 d-inline-flex mb-3" style="width: 70px; height: 70px;">
+                        <i class="bi bi-star text-info fs-3 m-auto"></i>
+                    </div>
+                    <h3 class="h5 card-title fw-bold">Get Recommendations</h3>
+                    <p class="card-text text-muted">Receive personalized hostel options ranked by how well they match your needs.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm hover-card position-relative">
+                <div class="position-absolute top-0 start-0 p-3">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 36px; height: 36px;">4</div>
+                </div>
+                <div class="card-body text-center p-4 pt-5">
+                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 d-inline-flex mb-3" style="width: 70px; height: 70px;">
+                        <i class="bi bi-check2-circle text-warning fs-3 m-auto"></i>
+                    </div>
+                    <h3 class="h5 card-title fw-bold">Book Instantly</h3>
+                    <p class="card-text text-muted">Secure your stay with instant confirmation and exclusive student deals.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Top Cities/Hostels Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-2">Featured Locations</span>
+            <h2 class="fw-bold">Popular Student Accommodations</h2>
+            <p class="text-muted mx-auto" style="max-width: 600px;">Discover top-rated student hostels in these popular university areas</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4 col-lg-3">
+                <div class="card border-0 shadow-sm transform-hover position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="badge bg-primary rounded-pill px-3 py-2">Most Popular</span>
+                    </div>
+                    <img src="{% static 'images/barcelona.jpg' %}" class="card-img-top" alt="Nairobi Hostels" style="height: 180px; object-fit: cover;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0 fw-bold">Nairobi Central</h5>
+                            <span class="badge bg-light text-primary">120+ hostels</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <p class="fw-bold text-primary mb-0">Ksh 35,000/semester</p>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-half"></i>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>Near University of Nairobi</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm w-100">View Properties</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="card border-0 shadow-sm transform-hover position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="badge bg-success rounded-pill px-3 py-2">Best Value</span>
+                    </div>
+                    <img src="{% static 'images/berlin.jpg' %}" class="card-img-top" alt="Karatina Hostels" style="height: 180px; object-fit: cover;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0 fw-bold">Karatina</h5>
+                            <span class="badge bg-light text-primary">85+ hostels</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <p class="fw-bold text-primary mb-0">Ksh 32,000/semester</p>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star"></i>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>Near Karatina University</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm w-100">View Properties</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="card border-0 shadow-sm transform-hover position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="badge bg-warning rounded-pill px-3 py-2">New Listings</span>
+                    </div>
+                    <img src="{% static 'images/berlin.jpg' %}" class="card-img-top" alt="Mombasa Hostels" style="height: 180px; object-fit: cover;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0 fw-bold">Mombasa</h5>
+                            <span class="badge bg-light text-primary">65+ hostels</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <p class="fw-bold text-primary mb-0">Ksh 29,000/semester</p>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star"></i>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>Near Technical University</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm w-100">View Properties</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="card border-0 shadow-sm transform-hover position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="badge bg-info rounded-pill px-3 py-2">Premium</span>
+                    </div>
+                    <img src="{% static 'images/berlin.jpg' %}" class="card-img-top" alt="Kisumu Hostels" style="height: 180px; object-fit: cover;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0 fw-bold">Kisumu</h5>
+                            <span class="badge bg-light text-primary">70+ hostels</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <p class="fw-bold text-primary mb-0">Ksh 30,000/semester</p>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-half"></i>
+                                <i class="bi bi-star"></i>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>Near Maseno University</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm w-100">View Properties</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="#" class="btn btn-primary px-4 py-2">View All Locations</a>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Testimonials Section -->
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-2">Student Reviews</span>
+        <h2 class="fw-bold">What Our Students Say</h2>
+        <p class="text-muted mx-auto" style="max-width: 600px;">Real experiences from students who found their perfect accommodation through our platform</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-body p-4">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="card-text fst-italic mb-4">"The AI recommendations were spot on! Found an amazing hostel near campus that matched exactly what I was looking for as a first-year student. The price was within my budget and the location is perfect."</p>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                            style="width: 50px; height: 50px; font-weight: bold;">JD</div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">James Davidson</h6>
+                            <small class="text-muted">Computer Science Student</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 text-end">
+                    <small class="text-muted">University of Nairobi</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-body p-4">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-half"></i>
+                    </div>
+                    <p class="card-text fst-italic mb-4">"I love how the system remembered my preferences and kept suggesting better matches with each semester. The instant booking feature saved me when I needed a last-minute accommodation after my previous arrangement fell through."</p>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
+                            style="width: 50px; height: 50px; font-weight: bold;">ML</div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Mia Lopez</h6>
+                            <small class="text-muted">Business Administration Student</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 text-end">
+                    <small class="text-muted">Kenyatta University</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-body p-4">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="card-text fst-italic mb-4">"As a student on a tight budget, I was skeptical about finding decent accommodation. I was blown away by the quality and value of the hostels recommended to me. Found a great place with high-speed internet, which is essential for my studies."</p>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center me-3"
+                            style="width: 50px; height: 50px; font-weight: bold;">TW</div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Tom Wilson</h6>
+                            <small class="text-muted">Engineering Student</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 text-end">
+                    <small class="text-muted">Technical University of Mombasa</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-3">
+        <a href="#" class="btn btn-outline-primary px-4">Read More Reviews</a>
+    </div>
+</div>
+
+<!-- Enhanced AI Feature Highlight Section -->
+<div class="bg-primary bg-opacity-10 py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <span class="badge bg-primary px-3 py-2 rounded-pill mb-3">Smart Technology</span>
+                <h2 class="fw-bold mb-3">Our AI Knows What You'll Love</h2>
+                <p class="lead mb-4">Our machine learning algorithm gets smarter with every booking you make and review you leave, providing increasingly personalized recommendations.</p>
+                
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary rounded-circle p-3 text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="bi bi-graph-up fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="ms-4">
+                            <h5 class="fw-bold">Learning Preferences</h5>
+                            <p class="text-muted">Our AI analyzes your booking patterns and preferences to make increasingly accurate recommendations for your future semesters.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary rounded-circle p-3 text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="bi bi-translate fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="ms-4">
+                            <h5 class="fw-bold">Natural Language Search</h5>
+                            <p class="text-muted">Simply describe what you're looking for in plain language, and our AI will find hostels that match your specific requirements.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary rounded-circle p-3 text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="bi bi-people fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="ms-4">
+                            <h5 class="fw-bold">Student Matching</h5>
+                            <p class="text-muted">Find hostels where students from your university or with similar academic interests have enjoyed their stay.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="bg-white p-4 rounded-4 shadow-lg transform-hover">
+                    <img src="{% static 'images/ai-dashboard.jpg' %}" alt="AI Recommendation Dashboard"
+                        class="img-fluid rounded-3">
+                    <div class="text-center mt-3">
+                        <span class="badge bg-success px-3 py-2">92% Satisfaction Rate</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action Section (New) -->
+<div class="container py-5">
+    <div class="card border-0 bg-primary shadow-lg" style="background: linear-gradient(135deg,rgb(0, 122, 255) 0%,rgb(88, 75, 205) 50%,rgb(97, 66, 235) 100%);">
+        <div class="card-body p-5 text-center text-white">
+            <h2 class="fw-bold mb-3">Ready to Find Your Perfect Student Hostel?</h2>
+            <p class="lead mb-4">Join thousands of satisfied students who found their ideal accommodation with our AI-powered platform</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{% url 'register_student' %}" class="btn btn-warning btn-lg px-4 fw-medium">
+                    <i class="bi bi-person-plus me-2"></i>Sign Up Now
+                </a>
+                <a href="#" class="btn btn-outline-light btn-lg px-4 fw-medium">
+                    <i class="bi bi-info-circle me-2"></i>Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Floating Chat Button -->
+{% comment %} <div class="position-fixed bottom-0 end-0 p-4">
+    <a href="{% url 'faqs' %}"
+        class="btn btn-primary floating-chat-btn rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+        style="width: 65px; height: 65px;">
+        <i class="bi bi-chat-dots-fill fs-4"></i>
+    </a>
+</div> {% endcomment %}
+
+<!-- Enhanced custom CSS -->
+<style>
+    /* Base hover effects */
+    .hover-card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Transform hover effect for images */
+    .transform-hover {
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+        overflow: hidden;
+    }
+    
+    .transform-hover:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Floating button animation */
+    .floating-chat-btn {
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .floating-chat-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Custom animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
+    }
+</style>
+    
+    <!-- Enhanced FAQ Section -->
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-2">Questions & Answers</span>
+            <h2 class="fw-bold">Frequently Asked Questions</h2>
+            <p class="text-muted mx-auto" style="max-width: 600px;">Find answers to common questions about our hostel booking platform</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                How does the AI recommendation system work?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Our AI recommendation system analyzes your preferences, budget constraints, location needs, and even your academic program to find the most suitable accommodations. It also learns from the experiences of other students with similar profiles to provide increasingly accurate suggestions over time.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Is there a fee for using your service?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Our service is completely free for students. We make our revenue through partnerships with hostel providers who pay a small commission when bookings are made through our platform. This allows us to provide you with the best service without any additional costs.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                Can I cancel or modify my booking?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes, you can cancel or modify your booking according to the cancellation policy of each hostel. Most hostels allow free cancellation up to 7-14 days before check-in. You can manage all your bookings from your user dashboard.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="headingFour">
+                            <button class="accordion-button collapsed fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                How are the reviews verified?
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We only allow reviews from verified students who have actually stayed at the hostel through our platform. This ensures that all reviews are authentic and give you a realistic picture of what to expect.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{% url 'faqs' %}" class="btn btn-outline-primary">View All FAQs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Newsletter Section -->
+    <div class="bg-light py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="mb-4">
+                                <i class="bi bi-envelope-paper text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <h3 class="fw-bold">Subscribe to Our Newsletter</h3>
+                            <p class="text-muted mb-4">Get exclusive deals, new hostel listings, and student accommodation tips delivered to your inbox</p>
+                            <form class="row g-2 justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="bi bi-envelope text-primary"></i></span>
+                                        <input type="email" class="form-control" placeholder="Your email address">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">Subscribe</button>
+                                </div>
+                            </form>
+                            <small class="text-muted mt-3 d-block">We respect your privacy and will never share your information</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}

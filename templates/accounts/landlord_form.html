@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<!-- Add custom CSS for this page -->
+<style>
+  .form-card {
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    border: none;
+  }
+  
+  .form-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .card-header {
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+    background: linear-gradient(45deg, #4e73df, #36b9cc);
+  }
+  
+  .card-header h6 {
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    color: white !important;
+  }
+  
+  .main-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #4e73df;
+    border-left: 4px solid #4e73df;
+    padding-left: 15px;
+  }
+  
+  .form-group label {
+    font-weight: 600;
+    color: #5a5c69;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-control {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d3e2;
+    transition: all 0.2s;
+  }
+  
+  .form-control:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+  }
+  
+  .btn {
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(45deg, #224abe, #1a3a94);
+    transform: translateY(-2px);
+  }
+  
+  .btn-secondary {
+    background-color: #858796;
+    border: none;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #717384;
+    transform: translateY(-2px);
+  }
+  
+  .section-divider {
+    height: 4px;
+    width: 50px;
+    background-color: #4e73df;
+    margin: 2rem 0;
+    border-radius: 2px;
+  }
+</style>
+
+<div class="container-fluid py-4">
+    <h2 class="main-title">{{ title }}</h2>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4 form-card">
+                <div class="card-body p-0">
+                    <form method="post" enctype="multipart/form-data" class="p-4">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 pr-md-4">
+                                <div class="card mb-4 form-card shadow-sm">
+                                    <div class="card-header py-3">
+                                        <h6 class="mb-0 font-weight-bold">Personal Information</h6>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        {% for field in user_form %}
+                                            <div class="form-group mb-4">
+                                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                {{ field }}
+                                                {% if field.help_text %}
+                                                    <small class="form-text text-muted mt-1">{{ field.help_text }}</small>
+                                                {% endif %}
+                                                {% if field.errors %}
+                                                    <div class="text-danger mt-2">
+                                                        {% for error in field.errors %}
+                                                            <i class="fas fa-exclamation-circle mr-1"></i>{{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 pl-md-4">
+                                <div class="card mb-4 form-card shadow-sm">
+                                    <div class="card-header py-3">
+                                        <h6 class="mb-0 font-weight-bold">Landlord Details</h6>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        {% for field in profile_form %}
+                                            <div class="form-group mb-4">
+                                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                {{ field }}
+                                                {% if field.help_text %}
+                                                    <small class="form-text text-muted mt-1">{{ field.help_text }}</small>
+                                                {% endif %}
+                                                {% if field.errors %}
+                                                    <div class="text-danger mt-2">
+                                                        {% for error in field.errors %}
+                                                            <i class="fas fa-exclamation-circle mr-1"></i>{{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="section-divider mx-auto"></div>
+                        
+                        <div class="form-group text-right mt-4">
+                            <a href="{% url 'landlord_list' %}" class="btn btn-secondary mr-2">
+                                <i class="fas fa-times mr-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save mr-1"></i> Save Landlord
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

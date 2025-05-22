@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ room.name }} - {{ hostel.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Breadcrumb navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'landlord_hostels' %}">Hostels</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'hostel_detail' hostel.id %}">{{ hostel.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ room.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Room Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{{ room.name }}</h1>
+            <p class="text-muted">{{ room.room_type.name }} in {{ hostel.name }}</p>
+            
+            <!-- Price and availability -->
+            <div class="d-flex align-items-center mb-3">
+                <h3 class="text-primary mb-0">Ksh{{ room.price_per_month }}/month</h3>
+                <span class="mx-2">•</span>
+                {% if room.availability_status %}
+                <span class="badge bg-success">Available</span>
+                {% else %}
+                <span class="badge bg-danger">Not Available</span>
+                {% endif %}
+                
+                <!-- Gender restriction if any -->
+                {% if room.gender_restriction != 'any' %}
+                <span class="mx-2">•</span>
+                <span class="badge bg-info">
+                    {% if room.gender_restriction == 'male' %}
+                    Male Only
+                    {% elif room.gender_restriction == 'female' %}
+                    Female Only
+                    {% endif %}
+                </span>
+                {% endif %}
+            </div>
+            
+            <!-- Quick info -->
+            <div class="row mb-3">
+                {% comment %} <div class="col-sm-6 col-md-4 mb-2">
+                    <small class="text-muted d-block">Room Size</small>
+                    <span>{{ room.size }} sq.m</span>
+                </div> {% endcomment %}
+                <div class="col-sm-6 col-md-4 mb-2">
+                    <small class="text-muted d-block">Capacity</small>
+                    <span>{{ room.capacity }} person(s)</span>
+                </div>
+                <div class="col-sm-6 col-md-4 mb-2">
+                    <small class="text-muted d-block">Security Deposit</small>
+                    <span>Ksh{{ room.security_deposit }}</span>
+                </div>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="mb-3">
+                {% if user.is_authenticated %}
+                    {% if user == hostel.owner.user or user.is_staff %}
+                        <!-- If the user is the owner or an admin, show edit and delete buttons -->
+                        <a href="{% url 'edit_room' hostel.id room.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit Room
+                        </a>
+                        <a href="{% url 'delete_room' hostel.id room.id %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    {% else %}
+                        <!-- Show Booking and Inquiry buttons only if the user is not an admin or owner -->
+                        <a href="{% if user.is_authenticated %}#" data-bs-toggle="modal" data-bs-target="#bookingModal"
+                           {% else %} {% url 'login' %}?next={{ request.path }} {% endif %}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-calendar-check"></i> Book Now
+                        </a>
+            
+                        <a href="{% if user.is_authenticated %}#" data-bs-toggle="modal" data-bs-target="#inquiryModal"
+                           {% else %} {% url 'login' %}?next={{ request.path }} {% endif %}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-question-circle"></i> Inquiry
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <!-- If not authenticated, show login link -->
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">
+                        <i class="fas fa-calendar-check"></i> Log in to Book Now
+                    </a>
+                {% endif %}
+            </div>
+                                    
+                                
+        </div>
+        
+        <!-- Main image -->
+        <div class="col-md-4">
+            {% if main_image %}
+            <img src="{{ main_image.image.url }}" class="img-fluid rounded" alt="{{ room.name }}">
+            {% else %}
+            <img src="{% static 'images/room-placeholder.jpg' %}" class="img-fluid rounded" alt="No image available">
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Main content -->
+    <div class="row">
+        <!-- Room details -->
+        <div class="col-lg-8">
+            <!-- Description -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>About this room</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ room.description|linebreaks }}</p>
+                </div>
+            </div>
+            
+            <!-- Image gallery -->
+            {% if room_images %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Photos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for image in room_images %}
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ image.image.url }}" data-lightbox="room-gallery" data-title="{{ image.caption }}">
+                                <img src="{{ image.image.url }}" class="img-fluid rounded" alt="{{ image.caption }}">
+                            </a>
+                            {% if image.caption %}
+                            <small class="text-muted">{{ image.caption }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Room amenities -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Room Amenities</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for amenity in room.amenities.all %}
+                        <div class="col-md-4 mb-2">
+                            <i class="{{ amenity.icon }}"></i> {{ amenity.name }}
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <p class="text-muted mb-0">No amenities listed for this room.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Hostel info card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>About the Hostel</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ hostel.name }}</h6>
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-map-marker-alt"></i> {{ hostel.address }}, {{ hostel.city }}
+                    </p>
+                    <p class="mb-3">{{ hostel.description|truncatewords:30 }}</p>
+                    <a href="{% url 'hostel_detail' hostel.id %}" class="btn btn-outline-primary btn-sm">View Hostel</a>
+                </div>
+            </div>
+            
+            <!-- Hostel amenities summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Hostel Amenities</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for amenity in hostel.amenities.all|slice:":6" %}
+                        <div class="col-6 mb-2">
+                            <i class="{{ amenity.icon }}"></i> {{ amenity.name }}
+                        </div>
+                        {% endfor %}
+                        
+                        {% if hostel.amenities.count > 6 %}
+                        <div class="col-12 mt-2">
+                            <a href="{% url 'hostel_detail' hostel.id %}#amenities" class="btn btn-link btn-sm p-0">
+                                View all {{ hostel.amenities.count }} amenities
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Other rooms in this hostel -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Other Rooms in This Hostel</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for other_room in hostel.room_set.all %}
+                            {% if other_room.id != room.id %}
+                            <a href="{% url 'room_detail' hostel.id other_room.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="mb-1">{{ other_room.name }}</h6>
+                                        <small>{{ other_room.room_type.name }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <h6 class="text-primary mb-0">Ksh{{ other_room.price_per_month }}</h6>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingModalLabel">Book {{ room.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This is where your booking form would go.</p>
+                <!-- Add your booking form here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Submit Booking</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inquiry Modal -->
+<div class="modal fade" id="inquiryModal" tabindex="-1" aria-labelledby="inquiryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inquiryModalLabel">Ask About {{ room.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Do you have questions about this room? Send a message to the owner.</p>
+                <form>
+                    <div class="mb-3">
+                        <label for="inquirySubject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="inquirySubject">
+                    </div>
+                    <div class="mb-3">
+                        <label for="inquiryMessage" class="form-label">Message</label>
+                        <textarea class="form-control" id="inquiryMessage" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Send Inquiry</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

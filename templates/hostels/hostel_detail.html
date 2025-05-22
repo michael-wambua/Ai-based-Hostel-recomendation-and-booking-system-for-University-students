@@ -1,0 +1,730 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load review_tags %}
+
+{% block title %}{{ hostel.name }} - Details{% endblock %}
+
+
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section with Main Info -->
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-body p-0">
+            <div class="row g-0">
+                <!-- Main Image -->
+                <div class="col-lg-5 position-relative">
+                    {% if main_image %}
+                        <img src="{{ main_image.image.url }}" alt="{{ hostel.name }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 300px;">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center bg-light h-100" style="min-height: 300px;">
+                            <i class="fas fa-home fa-4x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    {% if hostel.avg_rating %}
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <div class="badge bg-dark bg-opacity-75 p-2 rounded-pill">
+                            <i class="fas fa-star text-warning me-1"></i>
+                            <span class="fw-bold">{{ hostel.avg_rating|floatformat:1 }}</span>
+                            <span class="small">({{ hostel.review_count }})</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Hostel Info -->
+                <div class="col-lg-7">
+                    <div class="p-4 p-lg-5">
+                        <h1 class="display-5 fw-bold mb-3">{{ hostel.name }}</h1>
+                        
+                        <div class="d-flex align-items-center mb-3 text-muted">
+                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                            <span>
+                                {{ hostel.address }},
+                                {% if hostel.city %}{{ hostel.city }},{% endif %}
+                                {% if hostel.state %} {{ hostel.state }},{% endif %}
+                                {% if hostel.zip_code %} {{ hostel.zip_code }}{% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-4 text-muted">
+                            <i class="fas fa-university me-2 text-primary"></i>
+                            <span>
+                                Near {{ hostel.university_name }} 
+                                {% if hostel.distance_from_university %}
+                                <span class="badge bg-info ms-2">{{ hostel.distance_from_university }} km</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <!-- Action buttons -->
+                        <div class="mb-3 d-flex flex-wrap gap-2">
+                            {% if user.is_authenticated %}
+                                {% if can_edit %}
+                                    <!-- Owner & Admin Actions -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-primary dropdown-toggle" type="button" id="manageHostelDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-cog me-1"></i> Manage Hostel
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="manageHostelDropdown">
+                                            <li><a class="dropdown-item" href="{% url 'edit_hostel' hostel.id %}">
+                                                <i class="fas fa-edit me-2"></i> Edit Hostel
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="{% url 'add_room' hostel.id %}">
+                                                <i class="fas fa-door-open me-2"></i> Add Room
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="{% url 'add_room_type' %}?hostel_id={{ hostel.id }}">
+                                                <i class="fas fa-tags me-2"></i> Add Room Type
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="{% url 'delete_hostel' hostel.id %}">
+                                                <i class="fas fa-trash me-2"></i> Delete Hostel
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                    <!-- Student Actions -->
+                                    <button class="btn btn-outline-primary toggle-shortlist" data-hostel-id="{{ hostel.id }}">
+                                        {% if hostel in user.shortlisted_hostels.all %}
+                                            <i class="fas fa-heart"></i> Shortlisted
+                                        {% else %}
+                                            <i class="far fa-heart"></i> Add to Shortlist
+                                        {% endif %}
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main content -->
+    <div class="row g-4">
+        <!-- Left Column - Details -->
+        <div class="col-lg-8">
+            <!-- Tabs for organization -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="hostelDetailTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="about-tab" data-bs-toggle="tab" data-bs-target="#about" type="button" role="tab" aria-controls="about" aria-selected="true">
+                                <i class="fas fa-info-circle me-2"></i>About
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab" aria-controls="rules" aria-selected="false">
+                                <i class="fas fa-clipboard-list me-2"></i>Rules
+                            </button>
+                        </li>
+                        {% if hostel_images %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="photos-tab" data-bs-toggle="tab" data-bs-target="#photos" type="button" role="tab" aria-controls="photos" aria-selected="false">
+                                <i class="fas fa-images me-2"></i>Photos
+                            </button>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <div class="tab-content" id="hostelDetailTabContent">
+                        <!-- About Tab -->
+                        <div class="tab-pane fade show active" id="about" role="tabpanel" aria-labelledby="about-tab">
+                            <h5 class="card-title mb-3">About this hostel</h5>
+                            <p>{{ hostel.description|linebreaks }}</p>
+                        </div>
+                        
+                        <!-- Rules Tab -->
+                        <div class="tab-pane fade" id="rules" role="tabpanel" aria-labelledby="rules-tab">
+                            <h5 class="card-title mb-3">Hostel Rules</h5>
+                            <p>{{ hostel.rules|linebreaks }}</p>
+                        </div>
+                        
+                        <!-- Photos Tab -->
+                        {% if hostel_images %}
+                        <div class="tab-pane fade" id="photos" role="tabpanel" aria-labelledby="photos-tab">
+                            <h5 class="card-title mb-3">Photo Gallery</h5>
+                            <div class="row g-3">
+                                {% for image in hostel_images %}
+                                <div class="col-md-4 col-6">
+                                    <a href="{{ image.image.url }}" data-lightbox="hostel-gallery" data-title="{{ image.caption }}">
+                                        <div class="position-relative">
+                                            <img src="{{ image.image.url }}" class="img-fluid rounded shadow-sm" alt="{{ image.caption }}" style="object-fit: cover; height: 180px; width: 100%;">
+                                            {% if image.caption %}
+                                            <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-50 text-white p-2 small">
+                                                {{ image.caption }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0">Reviews</h5>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'hostel_reviews' hostel.id %}" class="btn btn-sm btn-outline-secondary">
+                            See all reviews
+                        </a>
+                        {% if can_review %}
+                            <a href="{% url 'add_review' hostel.id %}" class="btn btn-sm btn-primary">Write a Review</a>
+                        {% elif user.is_authenticated and user_has_reviewed %}
+                            <a href="{% url 'edit_review' user_review.id %}" class="btn btn-sm btn-outline-secondary">Edit Your Review</a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="display-3 fw-bold text-success">{{ hostel.get_average_rating|floatformat:1 }}</div>
+                                <div class="rating-stars mb-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= hostel.get_average_rating|floatformat:0 %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% elif forloop.counter <= hostel.get_average_rating|floatformat:0|add:"0.5" %}
+                                            <i class="fas fa-star-half-alt text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div class="text-muted">Based on {{ hostel.get_rating_count }} reviews</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="rating-bars">
+                                {% with rating_distribution=hostel.get_rating_distribution %}
+                                {% with review_count=hostel.get_rating_count %}
+                                {% for rating in "54321" %}
+                                    <div class="rating-bar-container d-flex align-items-center mb-2">
+                                        <div class="rating-label me-2 text-end" style="width: 60px;">{{ rating }} stars</div>
+                                        <div class="progress flex-grow-1" style="height: 12px;">
+                                            {% with count=rating_distribution|get_item:rating %}
+                                            {% with percentage=count|percentage:review_count %}
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                style="width: {{ percentage }}%" 
+                                                aria-valuenow="{{ percentage }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                            </div>
+                                            {% endwith %}
+                                            {% endwith %}
+                                        </div>
+                                        <div class="rating-count ms-2 text-muted" style="width: 30px;">
+                                            {{ rating_distribution|get_item:rating }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                {% endwith %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% with recent_reviews=hostel.reviews.all|slice:":3" %}
+                {% if recent_reviews %}
+                    <div class="recent-reviews">
+                        <div class="list-group list-group-flush border-top">
+                            {% for review in recent_reviews %}
+                                <div class="list-group-item p-4">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="reviewer-info">
+                                            <div class="d-flex align-items-center">
+                                                <div class="reviewer-avatar me-3">
+                                                    {% if review.user.user_type == 'STUDENT' %}
+                                                        {% with profile=review.user.student_profile %}
+                                                            {% if profile and profile.profile_picture %}
+                                                                <img src="{{ profile.profile_picture.url }}" alt="Profile picture" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                                                            {% else %}
+                                                                <div class="default-avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                                    {{ review.user.email|default:"U"|first|upper }}
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% elif review.user.user_type == 'LANDLORD' %}
+                                                        {% with profile=review.user.landlord_profile %}
+                                                            {% if profile and profile.profile_picture %}
+                                                                <img src="{{ profile.profile_picture.url }}" alt="Profile picture" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                                                            {% else %}
+                                                                <div class="default-avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                                    {{ review.user.email|default:"U"|first|upper }}
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% endif %}
+                                                </div>                                                                                               
+                                                
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold">{{ review.user.get_full_name|default:review.user.username }}</h6>
+                                                    <div class="text-muted small">{{ review.created_at|date:"M d, Y" }}</div>
+                                                    {% if review.has_stayed %}
+                                                        <span class="badge bg-success mt-1"><i class="fas fa-check-circle me-1"></i> Verified Stay</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="review-rating">
+                                            <div class="d-flex">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= review.rating %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-warning"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="review-content mt-3">
+                                        {% if review.comment %}
+                                            <p>{{ review.comment|truncatewords:50 }}</p>
+                                            {% if review.images.all %}
+                                                <div class="review-images mt-3 d-flex flex-wrap gap-2">
+                                                    {% for image in review.images.all %}
+                                                        <a href="{{ image.image.url }}" data-lightbox="review-{{ review.id }}">
+                                                            <img src="{{ image.image.url }}" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;" alt="Review image">
+                                                        </a>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        {% else %}
+                                            <p class="text-muted fst-italic">No comment provided.</p>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if review.replies.exists %}
+                                        <div class="owner-replies mt-3">
+                                            <div class="card bg-light border-0">
+                                                <div class="card-body py-3 px-3">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        {% with reply=review.replies.first %}
+                                                            {% if reply and reply.user %}
+                                                                <div class="reviewer-avatar me-2">
+                                                                    {% if reply.user.landlord_profile.profile_picture %}
+                                                                        <img src="{{ reply.user.landlord_profile.profile_picture.url }}" alt="Profile picture"
+                                                                            class="rounded-circle" width="30" height="30" style="object-fit: cover;">
+                                                                    {% else %}
+                                                                        <div class="default-avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                                                            style="width: 30px; height: 30px;">
+                                                                            {{ reply.user.username|first|upper }}
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endwith %}
+
+                                                        <div>
+                                                            <h6 class="mb-0 small">{{ review.replies.first.user.get_full_name|default:review.replies.first.user.username }}</h6>
+                                                            <div class="text-muted small">
+                                                                <span class="badge bg-secondary">Property Owner</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <p class="mb-0 small">{{ review.replies.first.comment|truncatewords:20 }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if user.is_authenticated %}
+                                        {% if user.is_staff or is_owner %}
+                                            {% if not review.replies.exists %}
+                                                <div class="mt-3">
+                                                    <a href="{% url 'add_review_reply' review.id %}" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-reply me-1"></i> Reply to this Review
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if hostel.get_rating_count > 3 %}
+                            <div class="text-center p-3 border-top">
+                                <a href="{% url 'hostel_reviews' hostel.id %}" class="btn btn-outline-primary">
+                                    View all {{ hostel.get_rating_count }} reviews
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="card-body border-top">
+                        <div class="alert alert-info mb-0">
+                            <p class="mb-0">This hostel hasn't received any reviews yet. 
+                            {% if user.is_authenticated and can_write_review %}
+                            Be the first to <a href="{% url 'add_review' hostel.id %}">write a review!</a>
+                            {% else %}
+                            <a href="{% url 'login' %}?next={% url 'add_review' hostel.id %}">Log in</a> to write the first review!
+                            {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Right Column - Sidebar -->
+        <div class="col-lg-4">
+            <!-- Available rooms -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-door-open me-2 text-primary"></i>Available Rooms</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for room in rooms %}
+                        <a href="{% url 'room_detail' hostel.id room.id %}" class="list-group-item list-group-item-action p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-bold">{{ room.room_number|default:"Unnamed Room" }}</span>
+                                    <br>
+                                    <span class="small text-muted">{{ room.room_type.name|default:"No Type" }}</span>
+                                </div>
+                                <div class="text-end">
+                                    <h6 class="fw-bold text-primary mb-1">
+                                        Ksh {{ room.price_per_month|default:"0" }}/month
+                                    </h6>
+                                    {% if room.availability_status %}
+                                        <span class="badge bg-success">Available</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Unavailable</span>
+                                    {% endif %}
+                                </div>
+                            </div>                            
+                        </a>
+                        {% empty %}
+                        <div class="list-group-item p-4 text-center">
+                            <i class="fas fa-info-circle fa-2x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No rooms available at this time.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amenities -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-concierge-bell me-2 text-primary"></i>Amenities</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for amenity in hostel.amenities.all %}
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="{{ amenity.icon }} me-2 text-success"></i> 
+                                <span>{{ amenity.name }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center py-3">
+                            <i class="fas fa-info-circle fa-2x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No amenities listed.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2 text-primary"></i>Location</h5>
+                </div>
+                <div class="card-body">
+                    <div id="map" class="rounded shadow-sm" style="height: 300px;"></div>
+                    <div class="mt-3">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-map-marker-alt text-danger mt-1 me-2"></i>
+                            <p class="text-muted mb-0">
+                                {{ hostel.address }},
+                                {% if hostel.city %}{{ hostel.city }},{% endif %}
+                                {% if hostel.state %} {{ hostel.state }},{% endif %}
+                                {% if hostel.zip_code %} {{ hostel.zip_code }}{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* High specificity selectors to override all existing styles */
+    .card .card-header .nav-tabs .nav-item .nav-link.active,
+    .card-header-tabs .nav-link.active,
+    #hostelDetailTabs .nav-link.active {
+        background-color: var(--bs-primary) !important; /* Primary background color */
+        color: #fff !important; /* White text for maximum contrast */
+        border-color: var(--bs-primary) !important;
+        border-bottom-color: var(--bs-primary) !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3) !important; /* Subtle shadow for active tab */
+    }
+
+    /* Style for tab content */
+    #hostelDetailTabContent .tab-pane {
+        background-color: #fff !important; /* White background for content */
+        color: #212529 !important; /* Dark text for content */
+        padding: 15px !important;
+        border-radius: 0 0 5px 5px !important;
+    }
+
+    /* Ensure inactive tabs have visible text */
+    .card .card-header .nav-tabs .nav-item .nav-link,
+    #hostelDetailTabs .nav-link {
+        color:rgb(39, 44, 48) !important;
+        border: 1px solid #dee2e6 !important;
+        background-color: transparent !important;
+    }
+
+    /* Fix for tab transitions */
+    .tab-pane.fade.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        try {
+            // Debug output to verify values
+            console.log("Map coordinates:", {{ hostel.latitude }}, {{ hostel.longitude }});
+            
+            // Check if map div exists
+            const mapDiv = document.getElementById('map');
+            if (!mapDiv) {
+                console.error("Map container not found");
+                return;
+            }
+            
+            // Initialize map with error handling
+            var map = L.map('map').setView([{{ hostel.latitude }}, {{ hostel.longitude }}], 15);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            L.marker([{{ hostel.latitude }}, {{ hostel.longitude }}])
+                .addTo(map)
+                .bindPopup('{{ hostel.name }}')
+                .openPopup();
+                
+            // Force map to update its size after initialization
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 100);
+        } catch (error) {
+            console.error("Error initializing map:", error);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all shortlist toggle buttons
+        const toggleButtons = document.querySelectorAll('.toggle-shortlist');
+        
+        // Add click event listener to each button
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                // Prevent default action and stop propagation
+                event.preventDefault();
+                event.stopPropagation();
+                
+                const hostelId = this.getAttribute('data-hostel-id');
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                // Create form data for the request
+                const formData = new FormData();
+                formData.append('hostel_id', hostelId);
+                formData.append('csrfmiddlewaretoken', csrfToken);
+                
+                // Send AJAX request
+                fetch('{% url "toggle_shortlist" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Update button appearance based on shortlist status
+                        if (data.is_shortlisted) {
+                            // Change to Shortlisted state
+                            button.innerHTML = '<i class="fas fa-heart"></i> Shortlisted';
+                            button.classList.remove('btn-outline-primary');
+                            button.classList.add('btn-primary');
+                        } else {
+                            // Change to Add to Shortlist state
+                            button.innerHTML = '<i class="far fa-heart"></i> Add to Shortlist';
+                            button.classList.remove('btn-primary');
+                            button.classList.add('btn-outline-primary');
+                        }
+                        
+                        // Update shortlist count in the sidebar badge
+                        updateShortlistedCount();
+                        
+                        // Show toast notification
+                        showToast(data.is_shortlisted ? 
+                            'Hostel added to your shortlist' : 
+                            'Hostel removed from your shortlist', 
+                            data.is_shortlisted ? 'success' : 'info');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error toggling shortlist:', error);
+                    showToast('Error updating shortlist. Please try again.', 'danger');
+                });
+            });
+        });
+        
+        // Function to update the shortlist count in the sidebar
+        function updateShortlistedCount() {
+            fetch('{% url "get_shortlisted_count" %}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Get the badge element in the sidebar
+                    const badge = document.getElementById('shortlisted-badge');
+                    
+                    if (badge) {
+                        if (data.shortlisted_count > 0) {
+                            badge.textContent = data.shortlisted_count;
+                            badge.style.display = 'inline-block'; // Make badge visible
+                        } else {
+                            badge.style.display = 'none'; // Hide badge if count is 0
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching shortlisted count:', error);
+            });
+        }
+        
+        // Call updateShortlistedCount on page load to initialize the count
+        updateShortlistedCount();
+        
+        // Function to update shortlist dropdown
+        function updateShortlistDropdown(hostels) {
+            const shortlistContainer = document.getElementById('shortlist-dropdown-menu');
+            
+            if (shortlistContainer) {
+                // Clear current content
+                shortlistContainer.innerHTML = '';
+                
+                if (hostels.length === 0) {
+                    // Show empty message
+                    const emptyItem = document.createElement('li');
+                    emptyItem.className = 'dropdown-item text-muted';
+                    emptyItem.textContent = 'No hostels in shortlist';
+                    shortlistContainer.appendChild(emptyItem);
+                } else {
+                    // Add each hostel to dropdown
+                    hostels.forEach(hostel => {
+                        const rating = hostel.avg_rating ? parseFloat(hostel.avg_rating).toFixed(1) : 'N/A';
+                        let stars = '';
+                        
+                        if (hostel.avg_rating) {
+                            for (let i = 0; i < Math.floor(hostel.avg_rating); i++) {
+                                stars += '<i class="fas fa-star text-warning"></i>';
+                            }
+                            if (hostel.avg_rating % 1 >= 0.5) {
+                                stars += '<i class="fas fa-star-half-alt text-warning"></i>';
+                            }
+                        }
+                        
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <a class="dropdown-item d-flex align-items-center" href="/hostel/${hostel.id}/">
+                                <div>
+                                    <strong>${hostel.name}</strong>
+                                    <div class="small">
+                                        ${stars} ${rating} (${hostel.review_count} reviews)
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                        shortlistContainer.appendChild(li);
+                    });
+                    
+                    // Add divider
+                    const divider = document.createElement('li');
+                    divider.innerHTML = '<hr class="dropdown-divider">';
+                    shortlistContainer.appendChild(divider);
+                    
+                    // Add view all link
+                    const viewAll = document.createElement('li');
+                    viewAll.innerHTML = '<a class="dropdown-item text-primary" href="/shortlist/"><i class="fas fa-list me-2"></i>View all shortlisted hostels</a>';
+                    shortlistContainer.appendChild(viewAll);
+                }
+            }
+        }
+        
+        // Function to show toast notifications
+        function showToast(message, type = 'success') {
+            const toastClass = type === 'success' ? 'bg-success' : 'bg-danger';
+            
+            // Create toast element
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast align-items-center ${toastClass} text-white border-0 position-fixed bottom-0 end-0 m-3`;
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+            
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Add to document
+            document.body.appendChild(toastEl);
+            
+            // Initialize and show toast using Bootstrap
+            const bsToast = new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 3000
+            });
+            bsToast.show();
+            
+            // Remove from DOM after hidden
+            toastEl.addEventListener('hidden.bs.toast', function() {
+                document.body.removeChild(toastEl);
+            });
+        }
+    });
+</script>
+
+{% endblock %}

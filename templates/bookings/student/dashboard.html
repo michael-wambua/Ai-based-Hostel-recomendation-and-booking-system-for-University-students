@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<!-- Add custom CSS for the light blue background and improved styling -->
+<style>
+  body {
+    background-color: #e6f2ff;
+  }
+
+  .booking-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s;
+    margin-bottom: 1.5rem;
+    border: none;
+  }
+
+  .booking-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .card-header {
+    background-color: #f8f9fa;
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0.8rem 1rem;
+  }
+
+  .section-header {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-left: 5px solid #4e73df;
+    padding-left: 15px;
+  }
+
+  .badge {
+    padding: 0.5rem 0.7rem;
+    font-weight: 500;
+  }
+
+  .btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+  }
+
+  .btn-primary:hover {
+    background-color: #3a5ccc;
+    border-color: #3a5ccc;
+  }
+
+  .btn-danger {
+    background-color: #e74a3b;
+    border-color: #e74a3b;
+  }
+
+  .btn-success {
+    background-color: #1cc88a;
+    border-color: #1cc88a;
+  }
+
+  .btn-success:hover {
+    background-color: #18aa74;
+    border-color: #18aa74;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: rgba(78, 115, 223, 0.07);
+  }
+
+  .booking-info {
+    margin-bottom: 0.5rem;
+  }
+
+  .booking-details-section {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: #4e73df;
+  }
+
+  .card-icon {
+    color: #4e73df;
+    margin-right: 10px;
+  }
+
+  .empty-state {
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, #f8f9fc, #eef1f6);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .empty-state:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state h3 {
+    font-size: 1.5rem;
+    color: #343a40;
+    font-weight: 600;
+  }
+
+  .empty-state p {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+
+  .empty-state .btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    transition: background 0.3s ease-in-out;
+  }
+
+  .empty-state .btn:hover {
+    background: #0056b3;
+    color: #fff;
+  }
+
+  .create-booking-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #007bff;
+    color: #fff;
+    width: 50px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .create-booking-btn i {
+    font-size: 1.2rem;
+  }
+
+  .create-booking-btn:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+  }
+
+  .validity-indicator {
+    padding: 0.5rem;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .validity-good {
+    background-color: rgba(28, 200, 138, 0.1);
+    color: #1cc88a;
+  }
+
+  .validity-warning {
+    background-color: rgba(246, 194, 62, 0.1);
+    color: #f6c23e;
+  }
+
+  .validity-critical {
+    background-color: rgba(231, 74, 59, 0.1);
+    color: #e74a3b;
+  }
+
+  .validity-expired {
+    background-color: rgba(231, 74, 59, 0.1);
+    color: #e74a3b;
+  }
+
+  .validity-expiring {
+    background-color: rgba(246, 194, 62, 0.1);
+    color: #f6c23e;
+  }
+
+  .validity-expiring-soon {
+    background-color: rgba(246, 194, 62, 0.1);
+    color: #f6c23e;
+  }
+
+  .validity-expiring-soon-soon {
+    background-color: rgba(246, 194, 62, 0.1);
+    color: #f6c23e;
+  }
+
+  .validity-expiring-soon-soon-soon {
+    background-color: rgba(246, 194, 62, 0.1);
+  }
+</style>
+
+<div class="container mt-4 mb-5">
+  <h1 class="section-header">
+    <i class="fas fa-clipboard-list card-icon"></i>My Bookings
+  </h1>
+
+  <!-- Active Bookings Section -->
+  <h2 class="section-header mt-5">
+    <i class="fas fa-calendar-check card-icon"></i>Active Bookings
+  </h2>
+  {% if active_bookings %}
+  <div class="row">
+    {% for booking in active_bookings %}
+    <div class="col-lg-12 mb-4">
+      <div class="card booking-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-building card-icon"></i>{{ booking.room.hostel.name }}
+          </h5>
+          <span class="badge bg-success">Active</span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Student Details -->
+          <div class="col-md-6">
+            <h6 class="detail-label">
+              <i class="fas fa-user-graduate me-2"></i>Student Details
+            </h6>
+            <div class="p-3 bg-light rounded mb-3">
+              <!-- Use booking.student consistently throughout -->
+              <p class="booking-info">
+                <strong>Full Name:</strong> {{ request.user.get_full_name }}
+              </p>
+              <p class="booking-info">
+                <strong>Email Address:</strong> {{ request.user.email }}
+              </p>
+              <p class="booking-info">
+                <strong>Phone Number:</strong> {{ request.user.phone_number|default:"Not provided" }}
+              </p>
+            </div>
+          </div>
+
+            <!-- Hostel Details -->
+            <div class="col-md-6">
+              <h6 class="detail-label">
+                <i class="fas fa-home me-2"></i>Hostel Details
+              </h6>
+              <div class="p-3 bg-light rounded mb-3">
+                <p class="booking-info">
+                  <strong>Hostel Name:</strong> {{ booking.room.hostel.name }}
+                </p>
+                <p class="booking-info">
+                  <strong>Address & Location:</strong> {{ booking.room.hostel.address }}
+                </p>
+                <p class="booking-info">
+                  <strong>Room Number:</strong> {{ booking.room.room_number }}
+                </p>
+                
+              </div>
+            </div>
+
+            <!-- Dates and Status -->
+            <div class="col-md-6">
+              <h6 class="detail-label">
+                <i class="far fa-calendar-alt me-2"></i>Booking Dates
+              </h6>
+              <div class="p-3 bg-light rounded mb-3">
+                <p class="booking-info">
+                  <strong>Check-in Date:</strong> {{ booking.start_date }}
+                </p>
+                <p class="booking-info">
+                  <strong>Expected Check-out:</strong> {{ booking.end_date }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Validity -->
+            <div class="col-md-6">
+              <h6 class="detail-label">
+                <i class="fas fa-hourglass-half me-2"></i>Status & Validity
+              </h6>
+              <div class="p-3 bg-light rounded mb-3">
+                <p class="booking-info">
+                  <strong>Booking Status:</strong> Active
+                </p>
+
+                {% if booking.days_remaining > 30 %}
+                <div class="validity-indicator validity-good">
+                  <i class="fas fa-check-circle me-2"></i>{{ booking.days_remaining }} Days Remaining
+                </div>
+                {% elif booking.days_remaining > 7 %}
+                <div class="validity-indicator validity-warning">
+                  <i class="fas fa-exclamation-circle me-2"></i>{{ booking.days_remaining }} Days Remaining
+                </div>
+                {% else %}
+                <div class="validity-indicator validity-critical">
+                  <i class="fas fa-exclamation-triangle me-2"></i>{{ booking.days_remaining }} Days Remaining
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-3 text-end">
+            <a href="{% url 'bookings:booking_detail' booking.id %}" class="btn btn-primary">
+              <i class="fas fa-eye me-2"></i>View Details
+            </a>
+            <a href="{% url 'bookings:extend_stay' booking.id %}" class="btn btn-success">
+              <i class="fas fa-calendar-plus me-2"></i>Extend Stay
+            </a>
+            <a href="{% url 'bookings:cancel_booking' booking.id %}" class="btn btn-danger"
+              onclick="return confirm('Are you sure you want to cancel this booking? This action cannot be undone.')">
+              <i class="fas fa-times-circle me-2"></i>Cancel Booking
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="far fa-calendar-alt"></i>
+    <h3>No Active Bookings</h3>
+    <p class="text-muted mb-3">
+      You currently don't have any active hostel bookings.
+    </p>
+    <a href="{% url 'hostel_list' %}" class="btn btn-primary">
+      <i class="fas fa-plus me-1"></i> Find a Hostel
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- Past Bookings Section -->
+  <h2 class="section-header mt-5">
+    <i class="fas fa-history card-icon"></i>Past Bookings
+  </h2>
+  {% if past_bookings %}
+  <div class="card booking-card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th><i class="fas fa-building me-2"></i>Hostel</th>
+              <th><i class="fas fa-door-open me-2"></i>Room</th>
+              <th><i class="fas fa-calendar-day me-2"></i>Check-in</th>
+              <th><i class="fas fa-calendar-check me-2"></i>Check-out</th>
+              <th><i class="fas fa-coins me-2"></i>Amount</th>
+              <th><i class="fas fa-info-circle me-2"></i>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in past_bookings %}
+            <tr>
+              <td>{{ booking.room.hostel.name }}</td>
+              <td>{{ booking.room.room_number }}</td>
+              <td>{{ booking.start_date }}</td>
+              <td>{{ booking.end_date }}</td>
+              <td>Ksh{{ booking.amount }}</td>
+              <td>
+                <span class="badge bg-secondary">Completed</span>
+              </td>
+              <td>
+                <a href="{% url 'bookings:booking_detail' booking.id %}" class="btn btn-sm btn-info">
+                  <i class="fas fa-eye me-1"></i>View
+                </a>
+                <a href="{% url 'bookings:rebook' booking.id %}" class="btn btn-sm btn-primary">
+                  <i class="fas fa-redo me-1"></i>Rebook
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card booking-card">
+    <div class="card-body text-center py-4">
+      <i class="fas fa-history" style="font-size: 3rem; color: #d1d3e2; margin-bottom: 1rem"></i>
+      <p class="text-muted">You have no past bookings.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Cancelled Bookings Section -->
+  <h2 class="section-header mt-5">
+    <i class="fas fa-ban card-icon"></i>Cancelled Bookings
+  </h2>
+  {% if cancelled_bookings %}
+  <div class="card booking-card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th><i class="fas fa-building me-2"></i>Hostel</th>
+              <th><i class="fas fa-door-open me-2"></i>Room</th>
+              <th><i class="fas fa-calendar-day me-2"></i>Check-in</th>
+              <th>
+                <i class="fas fa-calendar-check me-2"></i>Expected Check-out
+              </th>
+              <th><i class="fas fa-calendar-times me-2"></i>Cancelled On</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in cancelled_bookings %}
+            <tr>
+              <td>{{ booking.room.hostel.name }}</td>
+              <td>{{ booking.room.room_number }}</td>
+              <td>{{ booking.start_date }}</td>
+              <td>{{ booking.end_date }}</td>
+              <td>{{ booking.cancellation_date|date:"M d, Y" }}</td>
+              <td>
+                <a href="{% url 'bookings:booking_detail' booking.id %}" class="btn btn-sm btn-info">
+                  <i class="fas fa-eye me-1"></i>View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card booking-card">
+    <div class="card-body text-center py-4">
+      <i class="fas fa-ban" style="font-size: 3rem; color: #d1d3e2; margin-bottom: 1rem"></i>
+      <p class="text-muted">You have no cancelled bookings.</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

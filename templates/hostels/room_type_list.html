@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Room Types Management{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Manage Room Types</h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+      <a href="{% url 'add_room_type' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Room Type
+      </a>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if room_types %}
+    <div class="card shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Room Type</th>
+              <th>Capacity</th>
+              <th>Base Price</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for room_type in room_types %}
+              <tr>
+                <td>{{ room_type.id }}</td>
+                <td>{{ room_type.name }}</td>
+                <td>{{ room_type.capacity }}</td>
+                <td>Ksh{{ room_type.base_price|floatformat:2 }}</td>
+                <td>
+                  {% if room_type.description|length > 50 %}
+                    {{ room_type.description|slice:":50" }}...
+                  {% else %}
+                    {{ room_type.description }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if room_type.is_active %}
+                    <span class="badge bg-success">Active</span>
+                  {% else %}
+                    <span class="badge bg-danger">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group">
+                    <a href="#" class="btn btn-sm btn-outline-primary">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ room_type.id }}">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+
+                  <!-- Delete Modal -->
+                  <div class="modal fade" id="deleteModal{{ room_type.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">Confirm Delete</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          Are you sure you want to delete the room type "{{ room_type.name }}"?
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                          </button>
+                          <form action="#" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                              Delete
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if room_types.has_other_pages %}
+      <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if room_types.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ room_types.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link" aria-hidden="true">&laquo;</span>
+            </li>
+          {% endif %}
+
+          {% for i in room_types.paginator.page_range %}
+            {% if room_types.number == i %}
+              <li class="page-item active">
+                <span class="page-link">{{ i }}</span>
+              </li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if room_types.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ room_types.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link" aria-hidden="true">&raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> No room types found. Click the "Add New Room Type" button to create one.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

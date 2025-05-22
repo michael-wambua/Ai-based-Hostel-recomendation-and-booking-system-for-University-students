@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load hostel_extras %}
+
+{% block title %}Hostel Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3">{{ hostel.name }}</h1>
+            <p class="text-muted">
+                <span class="badge bg-secondary">{{ hostel.rooms.count }} Rooms</span>
+                <span class="badge bg-info">{{ hostel.get_rating_count }} Reviews</span>
+                <span class="me-3">{{ hostel.get_average_rating|floatformat:1 }} <i class="fas fa-star text-warning"></i></span>
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'admin_hostel_update' hostel.id %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Edit
+            </a>
+            <a href="{% url 'admin_hostel_delete' hostel.id %}" class="btn btn-danger">
+                <i class="fas fa-trash me-2"></i>Delete
+            </a>
+            <a href="{% url 'admin_hostel_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Hostel Info -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-primary">Hostel Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Basic Details</h6>
+                            <p><strong>Owner:</strong> {{ hostel.owner.user.get_full_name }}</p>
+                            <p><strong>Location:</strong> {{ hostel.address }}, {{ hostel.city }}, {{ hostel.state }} {{ hostel.zip_code }}</p>
+                            <p><strong>University:</strong> {{ hostel.university_name|default:"Not specified" }}</p>
+                            <p><strong>Distance from University:</strong> {{ hostel.distance_from_university|default:"Not specified" }} km</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Additional Info</h6>
+                            <p><strong>Created:</strong> {{ hostel.created_at|date:"F d, Y" }}</p>
+                            <p><strong>Last Updated:</strong> {{ hostel.updated_at|date:"F d, Y" }}</p>
+                            <p><strong>Average Rating:</strong> {{ hostel.get_average_rating|floatformat:1 }}/5</p>
+                        </div>
+                    </div>
+                    
+                    <h6 class="fw-bold">Description</h6>
+                    <p>{{ hostel.description }}</p>
+                    
+                    <h6 class="fw-bold">Rules</h6>
+                    <p>{{ hostel.rules|default:"No specific rules listed." }}</p>
+                    
+                    <h6 class="fw-bold">Amenities</h6>
+                    <div class="row">
+                        {% for amenity in hostel.amenities.all %}
+                            <div class="col-md-4 mb-2">
+                                <span class="badge bg-light text-dark p-2 w-100 text-start">
+                                    <i class="fas fa-check-circle text-success me-2"></i>{{ amenity.name }}
+                                </span>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <p class="text-muted">No amenities listed for this hostel.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hostel Images -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-primary">Hostel Images</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for image in hostel.images.all %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <img src="{{ image.image.url }}" class="card-img-top" alt="{{ image.caption|default:hostel.name }}">
+                                    <div class="card-body p-2">
+                                        <p class="small text-muted mb-0">{{ image.caption|default:"No caption" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12 text-center py-5">
+                                <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                                <p>No images available for this hostel.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Rooms List -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-primary">Rooms ({{ rooms.count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for room in rooms %}
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Room {{ room.room_number }}</h6>
+                                    <small class="text-muted">{{ room.price_per_month|floatformat:2 }} /month</small>
+                                </div>
+                                <p class="mb-1">{{ room.room_type.name }} - {{ room.capacity }} person(s)</p>
+                                <small class="text-{{ room.availability_status|yesno:'success,danger' }}">
+                                    <i class="fas fa-{{ room.availability_status|yesno:'check-circle,times-circle' }} me-1"></i>
+                                    {{ room.availability_status|yesno:'Available,Not Available' }}
+                                </small>
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-door-closed fa-3x text-muted mb-3"></i>
+                                <p>No rooms have been added to this hostel yet.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reviews Summary -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-primary">Reviews Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h1 class="display-4">{{ hostel.get_average_rating|floatformat:1 }}</h1>
+                        <div class="mb-2">
+                            {% with rating=hostel.get_average_rating %}
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= rating|floatformat:"0" %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% elif forloop.counter == rating|floatformat:"0"|add:"1" and rating|floatformat:"1"|slice:"-1:" != "0" %}
+                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </div>
+                        <p class="text-muted">{{ hostel.get_rating_count }} reviews</p>
+                    </div>
+                    
+                    {% with distribution=hostel.get_rating_distribution %}
+                        {% for i in "54321" %}
+                            {% with count=distribution|get_item:i|default:0 %}
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="me-2">{{ i }} <i class="fas fa-star text-warning small"></i></span>
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" 
+                                             style="width: {% if hostel.get_rating_count %}{{ count|div:hostel.get_rating_count|mul:100 }}{% else %}0{% endif %}%"></div>
+                                    </div>
+                                    <span class="ms-2 small">{{ count }}</span>
+                                </div>
+                            {% endwith %}
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

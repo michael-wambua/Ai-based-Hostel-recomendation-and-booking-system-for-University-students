@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}My Payments{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">My Payments</h1>
+    
+    <!-- {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %} -->
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">Pending Payments</h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_invoices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Invoice #</th>
+                                        <th>Hostel</th>
+                                        <th>Amount</th>
+                                        <th>Due Date</th>
+                                        <th>Days Left</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in pending_invoices %}
+                                        <tr>
+                                            <td>{{ invoice.id }}</td>
+                                            <td>{{ invoice.booking.room.hostel.name }}</td>
+                                            <td>Ksh{{ invoice.amount }}</td>
+                                            <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if invoice.days_remaining > 0 %}
+                                                    <span class="badge bg-warning">{{ invoice.days_remaining }} days</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Overdue</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'payments:invoice_detail' invoice.id %}" class="btn btn-sm btn-primary">Pay Now</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No pending invoices found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Paid Payments (Awaiting Confirmation)</h5>
+                </div>
+                <div class="card-body">
+                    {% if paid_invoices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Invoice #</th>
+                                        <th>Hostel</th>
+                                        <th>Amount</th>
+                                        <th>Payment Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in paid_invoices %}
+                                        <tr>
+                                            <td>{{ invoice.id }}</td>
+                                            <td>{{ invoice.booking.room.hostel.name }}</td>
+                                            <td>Ksh{{ invoice.amount }}</td>
+                                            <td>{{ invoice.payment.payment_date|date:"M d, Y" }}</td>
+                                            <td><span class="badge bg-info">Awaiting confirmation</span></td>
+                                            <td>
+                                                <a href="{% url 'payments:invoice_detail' invoice.id %}" class="btn btn-sm btn-secondary">View Details</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No payments awaiting confirmation.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Confirmed Payments</h5>
+                </div>
+                <div class="card-body">
+                    {% if confirmed_invoices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Invoice #</th>
+                                        <th>Hostel</th>
+                                        <th>Amount</th>
+                                        <th>Payment Date</th>
+                                        <th>Confirmed Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in confirmed_invoices %}
+                                        <tr>
+                                            <td>{{ invoice.id }}</td>
+                                            <td>{{ invoice.booking.room.hostel.name }}</td>
+                                            <td>Ksh{{ invoice.amount }}</td>
+                                            <td>{{ invoice.payment.payment_date|date:"M d, Y" }}</td>
+                                            <td>{{ invoice.payment.confirmed_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'payments:invoice_detail' invoice.id %}" class="btn btn-sm btn-secondary">View Details</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No confirmed payments found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">Expired/Cancelled Invoices</h5>
+                </div>
+                <div class="card-body">
+                    {% if expired_invoices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Invoice #</th>
+                                        <th>Hostel</th>
+                                        <th>Amount</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in expired_invoices %}
+                                        <tr>
+                                            <td>{{ invoice.id }}</td>
+                                            <td>{{ invoice.booking.room.hostel.name }}</td>
+                                            <td>Ksh{{ invoice.amount }}</td>
+                                            <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                                            <td><span class="badge bg-danger">Expired</span></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No expired or cancelled invoices found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

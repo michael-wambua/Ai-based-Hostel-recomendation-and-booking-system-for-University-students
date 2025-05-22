@@ -1,0 +1,134 @@
+<!-- all_recommendations.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4><i class="fas fa-robot me-2"></i>All Recommended Hostels</h4>
+        <a href="{% url 'update_preferences' %}" class="btn btn-outline-primary">
+            <i class="fas fa-sliders-h me-2"></i>Update Preferences
+        </a>
+    </div>
+
+    {% if has_preferences %}
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <!-- Filters sidebar -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <label class="form-label">Match Score</label>
+                            <select class="form-select" name="match_score">
+                                <option value="">Any Score</option>
+                                <option value="85">85% and above</option>
+                                <option value="70">70% and above</option>
+                                <option value="50">50% and above</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Price Range</label>
+                            <div class="row g-2">
+                                <div class="col">
+                                    <input type="number" class="form-control" name="price_min" placeholder="Min">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" name="price_max" placeholder="Max">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="location">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Apply Filters
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            {% if recommended_hostels %}
+            <div class="row">
+                {% for hostel in recommended_hostels %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="card-title">{{ hostel.name }}</h5>
+                                <div>
+                                    {% if hostel.match_score >= 85 %}
+                                    <span class="match-percentage match-high">{{ hostel.match_score }}%</span>
+                                    {% elif hostel.match_score >= 70 %}
+                                    <span class="match-percentage match-medium">{{ hostel.match_score }}%</span>
+                                    {% else %}
+                                    <span class="match-percentage match-low">{{ hostel.match_score }}%</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <ul class="list-group list-group-flush mb-3">
+                                <li class="list-group-item"><i class="fas fa-map-marker-alt me-2 text-muted"></i>{{
+                                    hostel.address }}</li>
+                                <li class="list-group-item"><i class="fas fa-money-bill-wave me-2 text-muted"></i>From
+                                    Ksh {{ hostel.price_per_month }}</li>
+                                <li class="list-group-item"><i class="fas fa-door-open me-2 text-muted"></i>{{
+                                    hostel.available_rooms }} rooms available</li>
+                            </ul>
+
+                            <div class="match-reasons mb-3">
+                                <h6 class="text-muted mb-2">Why we recommend this:</h6>
+                                {% for reason in hostel.match_reasons %}
+                                <div class="d-flex align-items-center mb-1">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>{{ reason }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'hostel-detail' hostel.id %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                                <a href="{% url 'save-hostel' hostel.id %}" class="btn btn-primary">
+                                    <i class="fas fa-bookmark me-1"></i>Save
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5>No recommendations found</h5>
+                    <p class="text-muted">Try adjusting your preferences or filters.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center p-5">
+            <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+            <h5>No Preferences Set</h5>
+            <p class="text-muted">Set your housing preferences to receive personalized recommendations.</p>
+            <a href="{% url 'update_preferences' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Set Preferences Now
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

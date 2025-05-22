@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% block title %}Booking Requests{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold text-primary">
+                <i class="fas fa-clipboard-list me-2"></i>Booking Requests
+            </h1>
+            <p class="text-muted">Manage student accommodation booking requests</p>
+        </div>
+        <div class="col-md-4 d-flex justify-content-end align-items-center">
+            <div class="stats-card bg-light p-3 rounded-3 shadow-sm me-3">
+                <h6 class="text-muted mb-1">Pending</h6>
+                <h3 class="mb-0 fw-bold text-primary">{{ pending_bookings|length }}</h3>
+            </div>
+            <div class="stats-card bg-light p-3 rounded-3 shadow-sm">
+                <h6 class="text-muted mb-1">Processed</h6>
+                <h3 class="mb-0 fw-bold text-success">{{ processed_bookings|length }}</h3>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Requests Card -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4 pending-card">
+        <div class="card-header bg-primary bg-gradient text-white py-3">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-hourglass-half me-2"></i>
+                <h5 class="card-title mb-0 fw-bold">Pending Requests</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if pending_bookings %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student</th>
+                                <th>Hostel & Room</th>
+                                <th>Duration</th>
+                                <th>Requested on</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in pending_bookings %}
+                                <tr class="booking-row">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white me-2">
+                                                {{ booking.student.get_full_name|first|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ booking.student.get_full_name }}</div>
+                                                <small class="text-muted">Student ID: {{ booking.student.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ booking.room.hostel.name }}</div>
+                                        <small class="text-muted">Room {{ booking.room.room_number }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="date-range">
+                                            <div class="check-in">
+                                                <i class="fas fa-calendar-check text-success me-1"></i>
+                                                {{ booking.start_date|date:"M d, Y" }}
+                                            </div>
+                                            <div class="check-out">
+                                                <i class="fas fa-calendar-times text-danger me-1"></i>
+                                                {{ booking.end_date|date:"M d, Y" }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">
+                                            <i class="far fa-clock me-1"></i>
+                                            {{ booking.booking_date|date:"M d, Y" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'bookings:approve_booking' booking.id %}" class="btn btn-sm btn-success me-2">
+                                                <i class="fas fa-check me-1"></i>Approve
+                                            </a>
+                                            <a href="{% url 'bookings:reject_booking' booking.id %}" class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Are you sure you want to reject this booking request?')">
+                                                <i class="fas fa-times me-1"></i>Reject
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard-check fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No pending booking requests</h5>
+                    <p class="text-muted">All booking requests have been processed.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Processed Requests Card -->
+    <div class="card shadow-sm border-0 rounded-3 processed-card">
+        <div class="card-header bg-success bg-gradient text-white py-3">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-history me-2"></i>
+                <h5 class="card-title mb-0 fw-bold">Recently Processed Requests</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if processed_bookings %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student</th>
+                                <th>Hostel & Room</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Processed on</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in processed_bookings %}
+                                <tr class="booking-row">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle {% if booking.status == 'confirmed' %}bg-success{% else %}bg-danger{% endif %} text-white me-2">
+                                                {{ booking.student.get_full_name|first|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ booking.student.get_full_name }}</div>
+                                                <small class="text-muted">Student ID: {{ booking.student.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ booking.room.hostel.name }}</div>
+                                        <small class="text-muted">Room {{ booking.room.room_number }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="date-range">
+                                            <div class="check-in">
+                                                <i class="fas fa-calendar-check text-success me-1"></i>
+                                                {{ booking.start_date|date:"M d, Y" }}
+                                            </div>
+                                            <div class="check-out">
+                                                <i class="fas fa-calendar-times text-danger me-1"></i>
+                                                {{ booking.end_date|date:"M d, Y" }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if booking.status == 'confirmed' %}
+                                            <span class="badge bg-success p-2">
+                                                <i class="fas fa-check-circle me-1"></i>Approved
+                                            </span>
+                                        {% elif booking.status == 'rejected' %}
+                                            <span class="badge bg-danger p-2">
+                                                <i class="fas fa-times-circle me-1"></i>Rejected
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary p-2">
+                                                <i class="fas fa-question-circle me-1"></i>{{ booking.status|title }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">
+                                            <i class="far fa-clock me-1"></i>
+                                            {{ booking.booking_date|date:"M d, Y" }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No processed requests</h5>
+                    <p class="text-muted">Your processed booking history will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .pending-card, .processed-card {
+        transition: transform 0.2s;
+    }
+    
+    .pending-card:hover, .processed-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .booking-row:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+    
+    .badge {
+        font-weight: 500;
+    }
+    
+    .date-range {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 8px;
+    }
+    
+    .stats-card {
+        min-width: 120px;
+        border-left: 4px solid;
+    }
+    
+    .stats-card:nth-child(1) {
+        border-left-color: #0d6efd;
+    }
+    
+    .stats-card:nth-child(2) {
+        border-left-color: #198754;
+    }
+</style>
+{% endblock %}

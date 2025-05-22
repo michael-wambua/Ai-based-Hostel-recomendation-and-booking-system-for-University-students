@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Complete Your Profile | Hostel Finder{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header text-center bg-primary text-white">
+                    <h3>Complete Your Student Profile</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <p class="lead mb-4">
+                        Help us personalize your hostel search by filling in your preferences below.
+                        This information will help us recommend the best hostels for you.
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.university.id_for_label }}">University:</label>
+                                {{ form.university }}
+                                {% if form.university.errors %}
+                                    <div class="text-danger">
+                                        {{ form.university.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.course_of_study.id_for_label }}">Course of Study:</label>
+                                {{ form.course_of_study }}
+                                {% if form.course_of_study.errors %}
+                                    <div class="text-danger">
+                                        {{ form.course_of_study.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.budget_min.id_for_label }}">Budget Minimum (Ksh):</label>
+                                {{ form.budget_min }}
+                                {% if form.budget_min.errors %}
+                                    <div class="text-danger">
+                                        {{ form.budget_min.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.budget_max.id_for_label }}">Budget Maximum (Ksh):</label>
+                                {{ form.budget_max }}
+                                {% if form.budget_max.errors %}
+                                    <div class="text-danger">
+                                        {{ form.budget_max.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.preferred_location.id_for_label }}">Preferred Location:</label>
+                            {{ form.preferred_location }}
+                            {% if form.preferred_location.errors %}
+                                <div class="text-danger">
+                                    {{ form.preferred_location.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.room_preference.id_for_label }}">Room Type Preference:</label>
+                                {{ form.room_preference }}
+                                {% if form.room_preference.errors %}
+                                    <div class="text-danger">
+                                        {{ form.room_preference.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.gender.id_for_label }}">Gender:</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <div class="text-danger">
+                                        {{ form.gender.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.preferred_amenities.id_for_label }}">Preferred Amenities:</label>
+                            {{ form.preferred_amenities }}
+                            {% if form.preferred_amenities.errors %}
+                                <div class="text-danger">
+                                    {{ form.preferred_amenities.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Enter amenities you'd like (e.g., WiFi, AC, Laundry, Kitchen), separated by commas.
+                            </small>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-block">Save Profile</button>
+                            <a href="{% url "student_dashboard" %}" class="btn btn-outline-secondary">Skip for Now</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

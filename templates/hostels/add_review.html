@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Review for {{ hostel.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Review {{ hostel.name }}</h2>
+                </div>
+                <div class="card-body">
+                    {% if not has_stayed %}
+                        <div class="alert alert-warning">
+                            <strong>Note:</strong> Our records show you haven't stayed at this hostel yet. 
+                            Reviews from verified guests are marked as such and may be weighted differently.
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="{{ form.rating.id_for_label }}" class="form-label fw-bold">{{ form.rating.label }}</label>
+                            <div class="rating-container">
+                                {{ form.rating }}
+                            </div>
+                            {% if form.rating.errors %}
+                                <div class="text-danger">{{ form.rating.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <h4 class="mt-4">Category Ratings</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.cleanliness_rating.id_for_label }}" class="form-label">{{ form.cleanliness_rating.label }}</label>
+                                    <div class="rating-container small">
+                                        {{ form.cleanliness_rating }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.location_rating.id_for_label }}" class="form-label">{{ form.location_rating.label }}</label>
+                                    <div class="rating-container small">
+                                        {{ form.location_rating }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.value_rating.id_for_label }}" class="form-label">{{ form.value_rating.label }}</label>
+                                    <div class="rating-container small">
+                                        {{ form.value_rating }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.facility_rating.id_for_label }}" class="form-label">{{ form.facility_rating.label }}</label>
+                                    <div class="rating-container small">
+                                        {{ form.facility_rating }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="{{ form.comment.id_for_label }}" class="form-label fw-bold">{{ form.comment.label }}</label>
+                            {{ form.comment }}
+                            {% if form.comment.errors %}
+                                <div class="text-danger">{{ form.comment.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <h4 class="mt-4">Add Photos (Optional)</h4>
+                        <div class="formset-container">
+                            {{ formset.management_form }}
+                            {% for image_form in formset %}
+                                <div class="image-form-row mb-3">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <label for="{{ image_form.image.id_for_label }}" class="form-label">Photo</label>
+                                                {{ image_form.image }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="{{ image_form.caption.id_for_label }}" class="form-label">Caption</label>
+                                                {{ image_form.caption }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if image_form.instance.pk %}
+                                        <div class="form-check mt-2">
+                                            {{ image_form.DELETE }}
+                                            <label class="form-check-label" for="{{ image_form.DELETE.id_for_label }}">
+                                                Delete this image
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'hostel_detail' hostel.id %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    // Script to make the rating stars interactive
+    document.addEventListener('DOMContentLoaded', function() {
+        // Stars highlighting for the main rating
+        const ratingInputs = document.querySelectorAll('.rating-input input');
+        ratingInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const ratingValue = this.value;
+                ratingInputs.forEach((inp, index) => {
+                    const label = inp.parentElement;
+                    if (index < ratingValue) {
+                        label.classList.add('selected');
+                    } else {
+                        label.classList.remove('selected');
+                    }
+                });
+            });
+        });
+        
+        // Stars highlighting for the category ratings
+        const categoryRatingInputs = document.querySelectorAll('.category-rating-input input');
+        categoryRatingInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const name = this.name;
+                const value = this.value;
+                document.querySelectorAll(`input[name="${name}"]`).forEach((inp, index) => {
+                    const label = inp.parentElement;
+                    if (index < value) {
+                        label.classList.add('selected');
+                    } else {
+                        label.classList.remove('selected');
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

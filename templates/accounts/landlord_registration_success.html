@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Pending - Hostel Finder System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --info: #60a5fa;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .verification-card {
+            max-width: 850px;
+            margin: 60px auto;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 25px 30px;
+            position: relative;
+        }
+        
+        .header-blob {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 150px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-weight: 500;
+            background-color: var(--warning);
+            color: #111;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+        }
+        
+        .info-icon {
+            font-size: 64px;
+            color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.1);
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto;
+        }
+        
+        .alert-info {
+            background-color: rgba(96, 165, 250, 0.1);
+            border-left: 4px solid var(--info);
+            border-radius: 8px;
+            color: #1e40af;
+        }
+        
+        .list-group-item {
+            padding: 15px 0;
+            border: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .list-group-item i {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 24px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+            border-radius: 50px;
+            padding: 10px 24px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(67, 97, 238, 0.2);
+        }
+        
+        .card-footer {
+            background-color: rgba(240, 242, 245, 0.5);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .footer-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 18px;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: 0;
+        }
+        
+        .step {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            width: 100px;
+        }
+        
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 2px solid #e9ecef;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+        }
+        
+        .step.active .step-icon {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .step.completed .step-icon {
+            background-color: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        .step-text {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .step.active .step-text {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .step.completed .step-text {
+            color: var(--success);
+        }
+        
+        footer {
+            background-color: var(--light);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if messages %}
+            <div class="messages mt-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} shadow-sm" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="card verification-card">
+            <div class="card-header text-center">
+                <div class="header-blob"></div>
+                <h4 class="mb-0 fw-bold">Verification Process</h4>
+            </div>
+            <div class="card-body p-5">
+                <div class="progress-steps mb-5">
+                    <div class="step completed">
+                        <div class="step-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="step-text">Registration</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="step-text">Verification</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="step-text">Approval</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="step-text">List Property</div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="mb-4">
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-3 fw-bold">Your account is awaiting verification</h3>
+                    <span class="badge status-badge mb-4">Pending Review</span>
+                    <p class="lead mb-4">
+                        Thank you for registering as a landlord with Hostel Finder System! 
+                        Our team is currently reviewing your submitted documents.
+                    </p>
+                    <div class="alert alert-info mb-4 text-start">
+                        <i class="fas fa-info-circle me-2"></i>
+                        This process typically takes 1-2 business days. We'll notify you via 
+                        email once your account has been verified.
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <h5 class="fw-bold mb-3">What happens next?</h5>
+                    <div class="card border-0 shadow-sm">
+                        <ul class="list-group list-group-flush text-start">
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle me-3"></i>
+                                Our admin team will review your submitted documents
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle me-3"></i>
+                                You'll receive an email notification once verified
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle me-3"></i>
+                                After verification, you can list your properties and manage bookings
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-center mt-5">
+                    <a href="{% url 'home' %}" class="btn btn-outline-primary me-3">
+                        <i class="fas fa-home me-2"></i>Return to Homepage
+                    </a>
+                    <a href="mailto:support@hostelfinder.com" class="btn btn-primary">
+                        <i class="fas fa-headset me-2"></i>Contact Support
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer text-center py-3">
+                <p class="text-muted mb-0">
+                    Questions? Contact our support team at <a href="mailto:support@hostelfinder.com" class="footer-link">support@hostelfinder.com</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; {% now "Y" %} Hostel Finder System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+{% comment %} 
+    {% extends 'base.html' %}
+
+    {% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card mt-5">
+                    <div class="card-header">Registration Pending</div>
+                    <div class="card-body">
+                        <h4>Thank you for registering as a landlord!</h4>
+                        <p>Your account is currently pending verification by our administrators.</p>
+                        <p>Once your account is verified, you'll receive an email notification and will be able to log in.</p>
+                        <p>This process typically takes 1-2 business days.</p>
+                        <hr>
+                        <p>If you have any questions, please contact our support team.</p>
+                        <a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %} 
+{% endcomment %}

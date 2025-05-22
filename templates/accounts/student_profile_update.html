@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Your Profile | Hostel Finder{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Update Your Profile</h3>
+                    <a href="{% url 'student_profile' %}" class="btn btn-light btn-sm">View Profile</a>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        <div class="messages mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <h5 class="border-bottom pb-2 mb-3">Profile Picture</h5>
+    
+                        <div class="mb-3 text-center">
+                            {% if student_profile.profile_picture %}
+                                <img src="{{ student_profile.profile_picture.url }}" alt="Profile Picture" class="img-thumbnail mb-2" width="150">
+                            {% else %}
+                                <p>No profile picture uploaded.</p>
+                            {% endif %}
+                            
+                            <div class="mt-2">
+                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Upload New Profile Picture:</label>
+                                {{ form.profile_picture }}
+                                {% if form.profile_picture.errors %}
+                                    <div class="text-danger">
+                                        {{ form.profile_picture.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3">Personal Information</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.student_id.id_for_label }}" class="form-label">Student ID:</label>
+                                {{ form.student_id }}
+                                {% if form.student_id.errors %}
+                                    <div class="text-danger">
+                                        {{ form.student_id.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender:</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <div class="text-danger">
+                                        {{ form.gender.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth:</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <div class="text-danger">
+                                        {{ form.date_of_birth.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number:</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger">
+                                        {{ form.phone.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address:</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="text-danger">
+                                    {{ form.address.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3 mt-4">Academic Information</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.university.id_for_label }}" class="form-label">University:</label>
+                                {{ form.university }}
+                                {% if form.university.errors %}
+                                    <div class="text-danger">
+                                        {{ form.university.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.course_of_study.id_for_label }}" class="form-label">Course of Study:</label>
+                                {{ form.course_of_study }}
+                                {% if form.course_of_study.errors %}
+                                    <div class="text-danger">
+                                        {{ form.course_of_study.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3 mt-4">Hostel Preferences</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.budget_min.id_for_label }}" class="form-label">Budget Minimum (Ksh):</label>
+                                {{ form.budget_min }}
+                                {% if form.budget_min.errors %}
+                                    <div class="text-danger">
+                                        {{ form.budget_min.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.budget_max.id_for_label }}" class="form-label">Budget Maximum (Ksh):</label>
+                                {{ form.budget_max }}
+                                {% if form.budget_max.errors %}
+                                    <div class="text-danger">
+                                        {{ form.budget_max.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.preferred_location.id_for_label }}" class="form-label">Preferred Location:</label>
+                            {{ form.preferred_location }}
+                            {% if form.preferred_location.errors %}
+                                <div class="text-danger">
+                                    {{ form.preferred_location.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.room_preference.id_for_label }}" class="form-label">Room Type Preference:</label>
+                            {{ form.room_preference }}
+                            {% if form.room_preference.errors %}
+                                <div class="text-danger">
+                                    {{ form.room_preference.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.preferred_amenities.id_for_label }}" class="form-label">Preferred Amenities:</label>
+                            {{ form.preferred_amenities }}
+                            {% if form.preferred_amenities.errors %}
+                                <div class="text-danger">
+                                    {{ form.preferred_amenities.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Enter amenities you'd like (e.g., WiFi, AC, Laundry, Kitchen), separated by commas.
+                            </small>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'student_profile' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

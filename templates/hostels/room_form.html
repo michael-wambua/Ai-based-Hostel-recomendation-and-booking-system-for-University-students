@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ title }}</h1>
+    <p>Adding room to: <strong>{{ hostel.name }}</strong></p>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Room Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Room Form Fields -->
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.room_type.id_for_label }}">Room Type*</label>
+                        {{ form.room_type }}
+                        {% if form.room_type.errors %}
+                            <div class="text-danger">{{ form.room_type.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.room_number.id_for_label }}">Room Number*</label>
+                        {{ form.room_number }}
+                        {% if form.room_number.errors %}
+                            <div class="text-danger">{{ form.room_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.price_per_month.id_for_label }}">Price per Month*</label>
+                        {{ form.price_per_month }}
+                        {% if form.price_per_month.errors %}
+                            <div class="text-danger">{{ form.price_per_month.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.security_deposit.id_for_label }}">Security Deposit*</label>
+                        {{ form.security_deposit }}
+                        {% if form.security_deposit.errors %}
+                            <div class="text-danger">{{ form.security_deposit.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.capacity.id_for_label }}">Capacity*</label>
+                        {{ form.capacity }}
+                        {% if form.capacity.errors %}
+                            <div class="text-danger">{{ form.capacity.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% comment %} <div class="col-md-4 mb-3">
+                        <label for="{{ form.size.id_for_label }}">Size (sqm)</label>
+                        {{ form.size }}
+                        {% if form.size.errors %}
+                            <div class="text-danger">{{ form.size.errors }}</div>
+                        {% endif %} {% endcomment %}
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.gender_restriction.id_for_label }}">Gender Restriction</label>
+                        {{ form.gender_restriction }}
+                        {% if form.gender_restriction.errors %}
+                            <div class="text-danger">{{ form.gender_restriction.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check mt-4">
+                            {{ form.availability_status }}
+                            <label class="form-check-label" for="{{ form.availability_status.id_for_label }}">
+                                Available for Booking
+                            </label>
+                            {% if form.availability_status.errors %}
+                                <div class="text-danger">{{ form.availability_status.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Room Images</h5>
+            </div>
+            <div class="card-body">
+                {{ image_formset.management_form }}
+                
+                <div class="row">
+                    {% for image_form in image_formset %}
+                    <div class="col-md-4 mb-3 formset-row">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6>Image {{ forloop.counter }}</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ image_form.image.id_for_label }}">Upload Image</label>
+                                    {{ image_form.image }}
+                                    {% if image_form.image.errors %}
+                                        <div class="text-danger">{{ image_form.image.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ image_form.caption.id_for_label }}">Caption</label>
+                                    {{ image_form.caption }}
+                                    {% if image_form.caption.errors %}
+                                        <div class="text-danger">{{ image_form.caption.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-check">
+                                    {{ image_form.is_main }}
+                                    <label class="form-check-label" for="{{ image_form.is_main.id_for_label }}">
+                                        Main Image
+                                    </label>
+                                    {% if image_form.is_main.errors %}
+                                        <div class="text-danger">{{ image_form.is_main.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                {% if image_form.instance.pk %}
+                                    {{ image_form.DELETE }}
+                                    <label for="{{ image_form.DELETE.id_for_label }}">Delete this image</label>
+                                {% endif %}
+                                
+                                {{ image_form.id }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <button type="submit" class="btn btn-primary">Save Room</button>
+            <a href="{% url 'room_list' hostel_id=hostel.id %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

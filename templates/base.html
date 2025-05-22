@@ -1,0 +1,708 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StaySmart - Secure your stay in student-friendly hostels today{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+
+    <!-- Font Awesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    {% block extra_css %}{% endblock %}
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --info-color: #4361ee;
+            --danger-color: #e63946;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+        }
+
+        /* Modern Navbar */
+        .navbar {
+            padding: 0.8rem 1rem;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-dark .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s;
+        }
+
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: #ffffff;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            min-height: calc(100vh - 60px);
+            background: linear-gradient(to bottom, rgb(110, 189, 238), rgb(32, 118, 246));
+            border-right: 1px solid #e9ecef;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.03);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link {
+            padding: 0.8rem 1rem;
+            color: #495057;
+            transition: all 0.3s;
+            font-weight: 500;
+            margin-bottom: 0.2rem;
+            border-radius: 0.5rem;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(67, 97, 238, 0.08);
+            /* color: var(--primary-color) !important; */
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
+            color: white !important;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        #unread-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* Modern Content Area */
+        .content {
+            padding: 25px;
+        }
+
+        /* Card Styling */
+        .card {
+            border: none;
+            border-radius: 0.8rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Floating Button */
+        .floating-btn {
+            transition: all 0.3s ease;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .floating-btn i {
+            font-size: 1.5rem;
+        }
+
+        /* Profile Image */
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Hostel Card */
+        .hostel-card {
+            transition: all 0.3s ease;
+            border-radius: 0.8rem;
+            overflow: hidden;
+        }
+
+        .hostel-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modern Footer */
+        footer {
+            background-color: #ffffff;
+            border-top: 1px solid #e9ecef;
+            padding: 2.5rem 0;
+            margin-top: 3rem !important;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .footer-link {
+            color: #495057;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            color: var(--primary-color);
+        }
+
+        .footer-heading {
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+        }
+
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background-color: #f8f9fa;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            transition: all 0.3s;
+            color: var(--primary-color);
+        }
+
+        .social-icon:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* Alert Styling */
+        .alert {
+            border-radius: 0.5rem;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Progress bar */
+        .progress {
+            border-radius: 1rem;
+            height: 0.5rem;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            border-radius: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Modern Navbar with Glass Effect -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: var(--primary-color);">
+        <div class="container">
+            <a class="navbar-brand d-flex flex-column align-items-start" href="{% if user.is_authenticated %}{% if user.user_type == 'STUDENT' %}{% url 'student_dashboard' %}
+                {% elif user.user_type == 'LANDLORD' %}{% url 'landlord_dashboard' %}
+                {% elif user.user_type == 'ADMIN' %}{% url 'admin_dashboard' %}
+                {% endif %}{% else %}{% url 'home' %}{% endif %}">
+
+                <div class="d-flex align-items-center">
+                    <img src="{% static 'images/hostel-logo.png' %}" alt="StaySmart Logo" class="me-2"
+                        style="height: 40px;">
+                    <div class="d-flex flex-column">
+                        <span class="fw-bold mb-0" style="font-size: 2rem; line-height: 1;">StaySmart</span>
+                        <small class="text-black" style="font-size: 0.75rem; line-height: 1.5;">Find verified hostels
+                            and student accommodations effortlessly.</small>
+                    </div>
+                </div>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if not user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'hostel_list' %}">
+                            <i class="fas fa-search me-1"></i> Find Hostels
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'about' %}">
+                            <i class="fas fa-info-circle me-1"></i> About
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{% url 'register_student' %}" class="btn btn-light px-3 py-2 rounded-pill">
+                            <i class="fas fa-user-plus me-1"></i> Register
+                        </a>
+                    </li>
+                    {% else %}
+                    {% if user.user_type == 'STUDENT' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'hostel_list' %}">
+                            <i class="fas fa-search me-1"></i> Find Hostels
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
+                            role="button" data-bs-toggle="dropdown">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
+                                style="width: 32px; height: 32px; overflow: hidden;">
+                                {% if user.user_type == 'STUDENT' and user.student_profile.profile_picture %}
+                                <img src="{{ user.student_profile.profile_picture.url }}" alt="{{ user.get_full_name }}"
+                                    class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% elif user.user_type == 'LANDLORD' and user.landlord_profile.profile_picture %}
+                                <img src="{{ user.landlord_profile.profile_picture.url }}"
+                                    alt="{{ user.get_full_name }}" class="img-fluid"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-light text-primary d-flex align-items-center justify-content-center w-100 h-100"
+                                    style="font-size: 14px; font-weight: 600;">
+                                    {{ user.get_full_name|slice:":1" }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <span>{{ user.get_full_name }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-2">
+                            <li class="px-3 py-1 text-muted small">
+                                {% if user.user_type == 'STUDENT' %}
+                                <span class="badge bg-primary rounded-pill">Student</span>
+                                {% elif user.user_type == 'LANDLORD' %}
+                                <span class="badge bg-success rounded-pill">Landlord</span>
+                                {% elif user.user_type == 'ADMIN' %}
+                                <span class="badge bg-danger rounded-pill">Administrator</span>
+                                {% endif %}
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider my-1">
+                            </li>
+                            <li><a class="dropdown-item py-2" href="{% url 'landlord_profile' %}"><i
+                                        class="fas fa-user me-2 text-muted"></i> My Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="#"><i class="fas fa-cog me-2 text-muted"></i>
+                                    Settings</a></li>
+                            <li>
+                                <hr class="dropdown-divider my-1">
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item py-2 text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            {% block sidebar %}
+            {% if user.is_authenticated and user.user_type == 'STUDENT' %}
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse"
+                style="background-color: var(--primary-color);">
+                <div class="position-sticky pt-4">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-block p-3 rounded-circle bg-primary bg-opacity-10 mb-3">
+                            <i class="fas fa-user-graduate text-primary fa-2x"></i>
+                        </div>
+                        <h6 class="fw-bold">{{ user.get_full_name }}</h6>
+                        <p class="text-muted small mb-0">Student Account</p>
+                    </div>
+
+                    <div class="px-3 mb-4">
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <ul class="nav flex-column gap-1 px-2">
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center {% if request.resolver_match.url_name == 'student_dashboard' %}active{% else %}text-dark{% endif %}"
+                                href="{% url 'student_dashboard' %}">
+                                <i class="fas fa-th-large me-3"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark"
+                                href="{% url 'hostel_list' %}">
+                                <i class="fas fa-search me-3"></i>
+                                <span>Find Hostels</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark"
+                                href="{% url 'bookings:student_dashboard' %}">
+                                <i class="fas fa-clipboard-list me-3"></i>
+                                <span>My Bookings</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark"
+                                href="{% url 'payments:student_payments' %}">
+                                <i class="fas fa-money-bill-wave me-3"></i>
+                                <span>Payments</span>
+                                {% if pending_payment_count > 0 %}
+                                <span class="ms-auto badge rounded-pill bg-danger">{{ pending_payment_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark"
+                                href="{% url 'user_shortlist' %}">
+                                <i class="fas fa-heart me-3"></i>
+                                <span>Favorites</span>
+                                {% if shortlisted_count > 0 %}
+                                <span class="ms-auto badge rounded-pill bg-danger" id="shortlisted-badge">{{
+                                    shortlisted_count }}</span>
+                                {% else %}
+                                <span class="ms-auto badge rounded-pill bg-danger" id="shortlisted-badge"
+                                    style="display:none;"></span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark" href="{% url 'student_profile' %}">
+                                <i class="fas fa-user-edit me-3"></i>
+                                <span>Profile</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            {% elif user.is_authenticated and user.user_type == 'LANDLORD' %}
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-4">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-block p-3 rounded-circle bg-success bg-opacity-10 mb-3">
+                            <i class="fas fa-building text-success fa-2x"></i>
+                        </div>
+                        <h6 class="fw-bold">{{ user.get_full_name }}</h6>
+                        <p class="text-muted small mb-0">Landlord Account</p>
+                    </div>
+
+                    <div class="px-3 mb-4">
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <ul class="nav flex-column gap-1 px-2">
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center {% if request.resolver_match.url_name == 'landlord_dashboard' %}active{% else %}text-dark{% endif %}"
+                                href="{% url 'landlord_dashboard' %}">
+                                <i class="fas fa-th-large me-3"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark" href="{% url 'landlord_hostels' %}">
+                                <i class="fas fa-building me-3"></i>
+                                <span>My Properties</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark" href="{% url 'add_hostel'%}">
+                                <i class="fas fa-plus-circle me-3"></i>
+                                <span>Add Property</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark"
+                                href="{% url 'bookings:booking_requests' %}">
+                                <i class="fas fa-clipboard-check me-3"></i>
+                                <span>Booking Requests</span>
+                                {% if pending_count > 0 %}
+                                <span class="ms-auto badge rounded-pill bg-danger">{{ pending_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark"
+                                href="{% url 'payments:landlord_payments' %}">
+                                <i class="fas fa-money-bill-wave me-3"></i>
+                                <span>Payments</span>
+                                {% if confirm_count > 0 %}
+                                <span class="ms-auto badge rounded-pill bg-warning">{{ confirm_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center {% if request.resolver_match.url_name == 'landlord_tenants' %}active{% else %}text-dark{% endif %}"
+                                href="{% url 'landlord_tenants' %}">
+                                <i class="fas fa-users me-3"></i>
+                                <span>My Tenants</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center text-dark"
+                                href="{% url 'landlord_profile' %}">
+                                <i class="fas fa-user-edit me-3"></i>
+                                <span>Profile</span>
+                            </a>
+                        </li>
+                    </ul>
+
+
+                </div>
+            </nav>
+            {% elif user.is_authenticated and user.user_type == 'ADMIN' %}
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-4">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-block p-3 rounded-circle bg-danger bg-opacity-10 mb-3">
+                            <i class="fas fa-user-shield text-danger fa-2x"></i>
+                        </div>
+                        <h6 class="fw-bold">{{ user.get_full_name }}</h6>
+                        <p class="text-muted small mb-0">Administrator</p>
+                    </div>
+
+                    <div class="px-3 mb-4">
+                        <div class="progress">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <ul class="nav flex-column gap-1 px-2">
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% else %}text-dark{% endif %}"
+                                href="{% url 'admin_dashboard' %}">
+                                <i class="fas fa-th-large me-3"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center {% if request.resolver_match.url_name == 'landlord_list' %}active{% else %}text-dark{% endif %}"
+                                href="{% url 'landlord_list' %}">
+                                <i class="fas fa-building me-3"></i>
+                                <span>Landlords</span>
+                                {% if pending_landlords_count > 0 %}
+                                <span class="badge bg-danger text-white ms-2 rounded-pill">{{ pending_landlords_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center {% if request.resolver_match.url_name == 'student_list' %}active{% else %}text-dark{% endif %}"
+                                href="{% url 'student_list' %}">
+                                <i class="fas fa-user-graduate me-3"></i>
+                                <span>Students</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link rounded-3 d-flex align-items-center {% if 'admin_hostel' in request.resolver_match.url_name %}active{% else %}text-dark{% endif %}"
+                                href="{% url 'admin_hostel_list' %}">
+                                <i class="fas fa-home me-3"></i>
+                                <span>Hostels</span>
+                            </a>
+                        </li>
+
+                    </ul>
+
+
+                </div>
+            </nav>
+            {% endif %}
+            {% endblock %}
+
+            <main
+                class="{% if user.is_authenticated %}col-md-9 ms-sm-auto col-lg-10 px-md-4{% else %}col-12{% endif %} content">
+                {% if messages %}
+                <div class="messages mt-3">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <div class="d-flex align-items-center">
+                            {% if message.tags == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                            {% elif message.tags == 'info' %}
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% elif message.tags == 'warning' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% elif message.tags == 'error' %}
+                            <i class="fas fa-times-circle me-2"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Modern Enhanced Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="footer-heading">Hostel Finder</h5>
+                    <p class="text-muted mb-4">Helping students find comfortable and affordable accommodation with
+                        AI-powered recommendations.</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5 class="footer-heading">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'home' %}" class="footer-link"><i
+                                    class="fas fa-chevron-right me-1 small"></i> Home</a></li>
+                        <li class="mb-2"><a href="{% url 'about' %}" class="footer-link"><i
+                                    class="fas fa-chevron-right me-1 small"></i> About Us</a></li>
+                        <li class="mb-2"><a href="{% url 'hostel_list' %}" class="footer-link"><i
+                                    class="fas fa-chevron-right me-1 small"></i> Find Hostels</a></li>
+                        <li class="mb-2"><a href="{% url 'faqs' %}" class="footer-link"><i
+                                    class="fas fa-chevron-right me-1 small"></i> FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-heading">For Landlords</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="fas fa-chevron-right me-1 small"></i>
+                                List Your Property</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="fas fa-chevron-right me-1 small"></i>
+                                Landlord Guidelines</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="fas fa-chevron-right me-1 small"></i>
+                                Property Management</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link"><i class="fas fa-chevron-right me-1 small"></i>
+                                Success Stories</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-heading">Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2 d-flex">
+                            <i class="fas fa-map-marker-alt mt-1 me-3 text-primary"></i>
+                            <span>123 University Road, Nairobi, Kenya</span>
+                        </li>
+                        <li class="mb-2 d-flex">
+                            <i class="fas fa-phone-alt mt-1 me-3 text-primary"></i>
+                            <span>+254 712 345 678</span>
+                        </li>
+                        <li class="mb-2 d-flex">
+                            <i class="fas fa-envelope mt-1 me-3 text-primary"></i>
+                            <span>info@hostelfinder.com</span>
+                        </li>
+                        <li class="mb-2 d-flex">
+                            <i class="fas fa-clock mt-1 me-3 text-primary"></i>
+                            <span>Monday-Friday: 9am-5pm</span>
+                        </li>
+                    </ul>
+                    <div class="mt-4">
+                        <h6 class="mb-3">Subscribe to our newsletter</h6>
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Your email">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-md-0 text-center text-md-start">
+                        &copy; 2025 Hostel Finder. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-inline mb-0 text-center text-md-end">
+                        <li class="list-inline-item"><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li class="list-inline-item"><span class="text-muted mx-2">|</span></li>
+                        <li class="list-inline-item"><a href="#" class="footer-link">Terms of Use</a></li>
+                        <li class="list-inline-item"><span class="text-muted mx-2">|</span></li>
+                        <li class="list-inline-item"><a href="#" class="footer-link">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Optional JavaScript -->
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Sidebar toggle for mobile
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.innerWidth < 768) {
+                document.body.classList.toggle('sidebar-toggled');
+                document.querySelector('.sidebar').classList.toggle('toggled');
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

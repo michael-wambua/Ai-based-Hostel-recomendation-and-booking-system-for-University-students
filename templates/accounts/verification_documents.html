@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verification Documents{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Verification Documents</h4>
+                </div>
+                <div class="card-body">
+                    {% if profile.verification_status == 'APPROVED' %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i> Your account is fully verified!
+                        </div>
+                    {% elif profile.verification_status == 'REJECTED' and profile.verification_notes %}
+                        <div class="alert alert-danger mb-4">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i> Verification Issues:</h5>
+                            <p>{{ profile.verification_notes }}</p>
+                            <p class="mb-0">Please upload the requested documents below to complete verification.</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-4">
+                            <h5><i class="fas fa-info-circle me-2"></i> Verification Requirements:</h5>
+                            <p>To verify your account, please upload the following documents:</p>
+                            <ul>
+                                <li>Government-issued ID (passport, driver's license, etc.)</li>
+                                <li>Proof of property ownership or management rights</li>
+                                <li>Recent utility bill with your name and address</li>
+                            </ul>
+                            <p class="mb-0">All documents must be clearly visible and dated within the last 3 months.</p>
+                        </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.id_document.id_for_label }}" class="form-label">
+                                <strong>ID Document</strong>
+                                {% if profile.id_document %}
+                                    <span class="text-success ms-2"><i class="fas fa-check-circle"></i> Uploaded</span>
+                                {% endif %}
+                            </label>
+                            {{ form.id_document }}
+                            <div class="form-text">{{ form.id_document.help_text }}</div>
+                            {% if form.id_document.errors %}
+                                <div class="text-danger">{{ form.id_document.errors }}</div>
+                            {% endif %}
+                            {% if profile.id_document %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Current file: {{ profile.id_document.name|slice:"20:" }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.property_proof.id_for_label }}" class="form-label">
+                                <strong>Property Proof</strong>
+                                {% if profile.property_proof %}
+                                    <span class="text-success ms-2"><i class="fas fa-check-circle"></i> Uploaded</span>
+                                {% endif %}
+                            </label>
+                            {{ form.property_proof }}
+                            <div class="form-text">{{ form.property_proof.help_text }}</div>
+                            {% if form.property_proof.errors %}
+                                <div class="text-danger">{{ form.property_proof.errors }}</div>
+                            {% endif %}
+                            {% if profile.property_proof %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Current file: {{ profile.property_proof.name|slice:"20:" }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.utility_bill.id_for_label }}" class="form-label">
+                                <strong>Utility Bill</strong>
+                                {% if profile.utility_bill %}
+                                    <span class="text-success ms-2"><i class="fas fa-check-circle"></i> Uploaded</span>
+                                {% endif %}
+                            </label>
+                            {{ form.utility_bill }}
+                            <div class="form-text">{{ form.utility_bill.help_text }}</div>
+                            {% if form.utility_bill.errors %}
+                                <div class="text-danger">{{ form.utility_bill.errors }}</div>
+                            {% endif %}
+                            {% if profile.utility_bill %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Current file: {{ profile.utility_bill.name|slice:"20:" }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-shield-alt me-2"></i> All documents are securely stored and will only be used for verification purposes.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'landlord_profile' %}" class="btn btn-secondary">Back to Profile</a>
+                            <button type="submit" class="btn btn-primary">Upload Documents</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

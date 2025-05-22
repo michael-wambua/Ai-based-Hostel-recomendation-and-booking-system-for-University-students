@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Room{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-danger mb-4">Delete Room</h3>
+                    <p class="mb-4">Are you sure you want to delete Room <strong>{{ room.room_number }}</strong> from <strong>{{ hostel.name }}</strong>?</p>
+                    <p class="text-danger">This action cannot be undone. All images and data associated with this room will be permanently deleted.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex mt-4">
+                            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                            <a href="{% url 'room_detail' hostel_id=hostel.id room_id=room.id %}" class="btn btn-secondary ms-2">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

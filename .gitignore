@@ -1,0 +1,17 @@
+env
+**/__pycache__/
+**/*.py[cod]
+*.pyo
+*.pyd
+*.egg-info
+*.egg
+dist/
+build/
+venv/
+media/
+db.sqlite3
+*/db.sqlite3
+
+# Ignore all migration files except __init__.py
+*/migrations/*
+!*/migrations/__init__.py

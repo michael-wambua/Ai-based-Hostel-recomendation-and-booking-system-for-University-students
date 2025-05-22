@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Amenities Management{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Manage Amenities</h2>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'add_amenity' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Amenity
+            </a>
+        </div>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    {% if amenities %}
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Icon</th>
+                            <th>Used In</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for amenity in amenities %}
+                            <tr>
+                                <td>{{ amenity.id }}</td>
+                                <td>{{ amenity.name }}</td>
+                                <td>
+                                    {% if amenity.icon_class %}
+                                        <i class="fas {{ amenity.icon_class }}"></i>
+                                    {% else %}
+                                        <span class="text-muted">No icon</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ amenity.hostel_set.count }} hostels
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <a href="#" class="btn btn-sm btn-outline-danger ms-1">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <p>No amenities have been added yet.</p>
+            <a href="{% url 'add_amenity' %}" class="btn btn-primary mt-2">Add Your First Amenity</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

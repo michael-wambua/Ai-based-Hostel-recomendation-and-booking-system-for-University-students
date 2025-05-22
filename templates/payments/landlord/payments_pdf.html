@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Payments Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 16px;
+            color: #34495e;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .pending {
+            color: #f39c12;
+        }
+
+        .confirmed {
+            color: #27ae60;
+        }
+
+        .expired {
+            color: #e74c3c;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 10px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Payments Report</h1>
+    <p>Generated on: {{ date_generated|date:"F j, Y H:i" }}</p>
+    <p>Landlord: {{ landlord.user.get_full_name }}</p>
+
+    {% if payments_to_confirm %}
+    <h2>Payments Awaiting Confirmation</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Hostel/Room</th>
+                <th>Amount</th>
+                <th>Payment Date</th>
+                <th>Transaction Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments_to_confirm %}
+            <tr>
+                <td>{{ payment.invoice.id }}</td>
+                <td>{{ payment.invoice.booking.student.get_full_name|default:payment.invoice.booking.student.username }}
+                </td>
+                <td>{{ payment.invoice.booking.room.hostel.name }} / {{ payment.invoice.booking.room.name }}</td>
+                <td>Ksh{{ payment.invoice.amount }}</td>
+                <td>{{ payment.payment_date|date:"M d, Y H:i" }}</td>
+                <td>{{ payment.transaction_code }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if pending_invoices %}
+    <h2>Pending Invoices</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Hostel/Room</th>
+                <th>Amount</th>
+                <th>Created</th>
+                <th>Due Date</th>
+                <th>Days Left</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in pending_invoices %}
+            <tr>
+                <td>{{ invoice.id }}</td>
+                <td>{{ invoice.booking.student.get_full_name|default:invoice.booking.student.username }}</td>
+                <td>{{ invoice.booking.room.hostel.name }} / {{ invoice.booking.room.name }}</td>
+                <td>Ksh{{ invoice.amount }}</td>
+                <td>{{ invoice.created_at|date:"M d, Y" }}</td>
+                <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                <td>
+                    {% if invoice.days_remaining > 0 %}
+                    <span class="pending">{{ invoice.days_remaining }} days</span>
+                    {% else %}
+                    <span class="expired">Overdue</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if confirmed_invoices %}
+    <h2>Confirmed Payments</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Hostel/Room</th>
+                <th>Amount</th>
+                <th>Payment Date</th>
+                <th>Confirmed Date</th>
+                <th>Transaction Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in confirmed_invoices %}
+            <tr>
+                <td>{{ invoice.id }}</td>
+                <td>{{ invoice.booking.student.get_full_name|default:invoice.booking.student.username }}</td>
+                <td>{{ invoice.booking.room.hostel.name }} / {{ invoice.booking.room.name }}</td>
+                <td>Ksh{{ invoice.amount }}</td>
+                <td>{{ invoice.payment.payment_date|date:"M d, Y" }}</td>
+                <td>{{ invoice.payment.confirmed_date|date:"M d, Y" }}</td>
+                <td>{{ invoice.payment.transaction_code }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if expired_invoices %}
+    <h2>Expired/Cancelled Invoices</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Hostel/Room</th>
+                <th>Amount</th>
+                <th>Created</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in expired_invoices %}
+            <tr>
+                <td>{{ invoice.id }}</td>
+                <td>{{ invoice.booking.student.get_full_name|default:invoice.booking.student.username }}</td>
+                <td>{{ invoice.booking.room.hostel.name }} / {{ invoice.booking.room.name }}</td>
+                <td>Ksh{{ invoice.amount }}</td>
+                <td>{{ invoice.created_at|date:"M d, Y" }}</td>
+                <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                <td>
+                    <span class="expired">{{ invoice.get_status_display }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <div class="footer">
+        <p>Generated from the Hostel Management System</p>
+    </div>
+</body>
+
+</html>

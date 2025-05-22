@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ hostel.name }} - Rooms</h1>
+        {% if is_owner %}
+        <a href="{% url 'add_room' hostel_id=hostel.id %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Add New Room
+        </a>
+        {% endif %}
+    </div>
+
+    {% if rooms %}
+        <div class="row">
+            {% for room in rooms %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if room.images.first %}
+                            <img src="{{ room.images.first.image.url }}" class="card-img-top" alt="{{ room.name }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'images/room_placeholder.jpg' %}" class="card-img-top" alt="Room Placeholder" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ room.room_number }}</h5>
+                            <p class="card-text">
+                                <strong>Type:</strong> {{ room.get_room_type_display }}<br>
+                                <strong>Price:</strong> {{ room.price_per_month }} per month<br>
+                                <strong>Status:</strong> 
+                                {% if room.availability_status %}
+                                    <span class="badge bg-success">Available</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Occupied</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'room_detail' hostel_id=hostel.id room_id=room.id %}" class="btn btn-info btn-sm">View Details</a>
+                            {% if is_owner %}
+                                <a href="{% url 'edit_room' hostel_id=hostel.id room_id=room.id %}" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="{% url 'delete_room' hostel_id=hostel.id room_id=room.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this room?')">Delete</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No rooms available for this hostel yet.
+            {% if is_owner %}
+                <a href="{% url 'add_room' hostel_id=hostel.id %}">Add your first room</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'hostel_detail' hostel_id=hostel.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Hostel Details
+        </a>
+    </div>
+</div>
+{% endblock %}

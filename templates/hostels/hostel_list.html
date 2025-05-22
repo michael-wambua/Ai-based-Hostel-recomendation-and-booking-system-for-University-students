@@ -1,0 +1,641 @@
+{% extends 'base.html' %}
+
+{% load static %} 
+{% load humanize %} 
+
+{% block title %}Find Student Hostels{% endblock %} 
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Hero Search Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card bg-primary text-white shadow">
+        <div class="card-body py-4">
+          <div class="row align-items-center">
+            <div class="col-lg-3">
+              <h1 class="fw-bold mb-0">Find Your Perfect Hostel</h1>
+              <p class="lead">Compare, book and find student accommodation</p>
+            </div>
+            <div class="col-lg-9">
+              <form method="get" action="{% url 'hostel_list' %}" class="d-flex">
+                <div class="input-group input-group-lg">
+                  <input type="text" name="search_query" class="form-control" placeholder="Search hostels by name, area or university..." 
+                         value="{{ request.GET.search_query|default:'' }}">
+                  <button class="btn btn-light" type="submit">
+                    <i class="bi bi-search"></i> Search
+                  </button>
+                  <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#advancedFilterModal">
+                    <i class="bi bi-sliders"></i> Advanced Filters
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Sidebar (collapsible on mobile) -->
+    <div class="col-lg-3 mb-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Filter Results</h5>
+          <button class="btn btn-sm btn-link d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+            <i class="bi bi-chevron-down"></i>
+          </button>
+        </div>
+        <div class="collapse d-lg-block" id="filterCollapse">
+          <div class="card-body">
+            <form method="get" action="{% url 'hostel_list' %}">
+              <!-- Keep the search query if it exists -->
+              {% if request.GET.search_query %}
+              <input type="hidden" name="search_query" value="{{ request.GET.search_query }}">
+              {% endif %}
+              
+              <div class="mb-3">
+                <label for="university" class="form-label fw-bold">University</label>
+                {{ search_form.university }}
+              </div>
+
+              <div class="mb-3">
+                <label for="city" class="form-label fw-bold">City</label>
+                {{ search_form.city }}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold">Price Range (KSh/month)</label>
+                <div class="row g-2">
+                  <div class="col">
+                    {{ search_form.min_price }}
+                  </div>
+                  <div class="col">
+                    {{ search_form.max_price }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="room_type" class="form-label fw-bold">Room Type</label>
+                {{ search_form.room_type }}
+              </div>
+
+              <div class="mb-3">
+                <label for="gender_restriction" class="form-label fw-bold">Gender</label>
+                {{ search_form.gender_restriction }}
+              </div>
+
+              <div class="mb-3">
+                <label for="max_distance" class="form-label fw-bold">Max Distance (km)</label>
+                {{ search_form.max_distance }}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                  Amenities
+                  <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none" data-bs-toggle="collapse" data-bs-target="#amenitiesCollapse">
+                    <i class="bi bi-chevron-down"></i>
+                  </button>
+                </label>
+                <div class="collapse show" id="amenitiesCollapse">
+                  <div class="border p-2 rounded" style="max-height: 200px; overflow-y: auto">
+                    {% for amenity in search_form.amenities %}
+                    <div class="form-check">{{ amenity }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-funnel"></i> Apply Filters
+                </button>
+                {% if request.GET %}
+                <a href="{% url 'hostel_list' %}" class="btn btn-outline-secondary">
+                  <i class="bi bi-x-circle"></i> Clear Filters
+                </a>
+                {% endif %}
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quick Stats Card -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Quick Stats</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Total Hostels:</span>
+            <span class="fw-bold">{{ page_obj.paginator.count }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Cities:</span>
+            <span class="fw-bold">{{ search_form.city.field.queryset.count }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Universities:</span>
+            <span class="fw-bold">{{ search_form.university.field.queryset.count }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hostel List -->
+    <div class="col-lg-9">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h2 class="mb-0">Student Hostels</h2>
+              {% if page_obj %}
+              <p class="text-muted">Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} hostels</p>
+              {% endif %}
+            </div>
+            <div class="d-flex">
+              {% if user.is_landlord %}
+              <a href="{% url 'add_hostel' %}" class="btn btn-success me-2">
+                <i class="bi bi-plus-circle"></i> Add Hostel
+              </a>
+              {% endif %}
+              {% if user.is_authenticated and selected_hostels %}
+              <a href="{% url 'compare_hostels' %}?{% for id in selected_hostels %}hostel_id={{ id }}&{% endfor %}" 
+                 class="btn btn-outline-primary">
+                <i class="bi bi-bar-chart"></i> Compare Selected
+              </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Sort Options -->
+          <div class="d-flex justify-content-end mb-3">
+            <div class="btn-group">
+              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-sort-down"></i> Sort By
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="?{% for key, value in request.GET.items %}{% if key != 'sort' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort=price_low">Price: Low to High</a></li>
+                <li><a class="dropdown-item" href="?{% for key, value in request.GET.items %}{% if key != 'sort' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort=price_high">Price: High to Low</a></li>
+                <li><a class="dropdown-item" href="?{% for key, value in request.GET.items %}{% if key != 'sort' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort=rating">Rating</a></li>
+                <li><a class="dropdown-item" href="?{% for key, value in request.GET.items %}{% if key != 'sort' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort=distance">Distance</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {% if page_obj %}
+          <!-- Hostel Cards -->
+          <div class="row g-4">
+            {% for hostel in page_obj %}
+            <div class="col-md-6">
+              <div class="card h-100 shadow-hover">
+                <div style="position: absolute; top:10px; right:10px; z-index:9999;">
+                  <button 
+                    class="btn btn-light rounded-circle shadow-sm toggle-shortlist" 
+                    data-hostel-id="{{ hostel.id }}"
+                    data-shortlisted="{% if user.is_authenticated and hostel in user.shortlisted_hostels.all %}true{% else %}false{% endif %}"
+                    onclick="{% if not user.is_authenticated %}
+                              window.location.href = '{% url "login" %}?next={{ request.path }}';
+                             {% else %}
+                              event.stopPropagation(); toggleShortlist(event);
+                             {% endif %}">
+                    <i class="bi 
+                       {% if user.is_authenticated and hostel in user.shortlisted_hostels.all %}
+                         bi-heart-fill text-danger
+                       {% else %}
+                         bi-heart
+                       {% endif %}"></i>
+                  </button>
+                </div>                
+                
+                <!-- Image Carousel -->
+                <div id="carousel{{ hostel.id }}" class="carousel slide" data-bs-ride="carousel">
+                  <div class="carousel-inner">
+                    {% if hostel.images.exists %}
+                      {% for image in hostel.images.all %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                          <img src="{{ image.image.url }}" class="card-img-top" alt="{{ hostel.name }}" 
+                               style="height: 220px; object-fit: cover">
+                        </div>
+                      {% endfor %}
+                    {% else %}
+                      <div class="carousel-item active">
+                        <div class="bg-light text-center py-5" style="height: 220px;">
+                          <i class="bi bi-building fs-1"></i>
+                          <p>No Images Available</p>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                  {% if hostel.images.count > 1 %}
+                  <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ hostel.id }}" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#carousel{{ hostel.id }}" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  </button>
+                  {% endif %}
+                </div>
+
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title fw-bold mb-0">{{ hostel.name }}</h5>
+                    {% if hostel.avg_rating %}
+                    <div class="badge bg-success p-2">
+                      {{ hostel.avg_rating|floatformat:1 }}
+                      <i class="bi bi-star-fill"></i>
+                      <small>({{ hostel.review_count }})</small>
+                    </div>
+                    {% endif %}
+                  </div>
+
+                  <p class="card-text text-muted mb-2">
+                    <a href="https://www.google.com/maps?q={{ hostel.latitude }},{{ hostel.longitude }}" 
+                        target="_blank" 
+                        title="Open in Google Maps" 
+                        class="text-decoration-none text-muted">
+                      <i class="bi bi-geo-alt-fill"></i>
+                    </a>
+                    {{ hostel.city }}
+                    {% if hostel.distance_from_university %}
+                    <span class="ms-2 badge bg-light text-dark">
+                      <i class="bi bi-signpost"></i> {{ hostel.distance_from_university }} km from campus
+                    </span>
+                    {% endif %}
+                  </p>
+
+                  <p class="card-text mb-3">
+                    {{ hostel.description|truncatechars:100 }}
+                  </p>
+
+                  <!-- Amenities -->
+                  <div class="d-flex flex-wrap mb-3">
+                    {% for amenity in hostel.amenities.all|slice:":5" %}
+                    <span class="badge bg-light text-dark me-1 mb-1">
+                      {% if amenity.icon %}
+                      <i class="{{ amenity.icon }}"></i>
+                      {% endif %} {{ amenity.name }}
+                    </span>
+                    {% endfor %}
+                    {% if hostel.amenities.count > 5 %}
+                    <span class="badge bg-light text-dark me-1 mb-1">
+                      +{{ hostel.amenities.count|add:"-5" }}
+                    </span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Price Range -->
+                  {% with min_price=hostel.rooms.all|dictsort:"price_per_month"|first %}
+                    {% with max_price=hostel.rooms.all|dictsort:"-price_per_month"|first %}
+                    <div class="text-primary fw-bold fs-5 mb-2">
+                      {% if min_price.price_per_month == max_price.price_per_month %}
+                      Ksh {{ min_price.price_per_month|floatformat:0|intcomma }}/month
+                      {% else %}
+                      Ksh {{ min_price.price_per_month|floatformat:0|intcomma }} - {{ max_price.price_per_month|floatformat:0|intcomma }}/month
+                      {% endif %}
+                    </div>
+                    {% endwith %}
+                  {% endwith %}
+                </div>
+
+                <div class="card-footer bg-white border-top-0">
+                  <div class="d-flex justify-content-between">
+                    <a href="{% url 'hostel_detail' hostel_id=hostel.id %}" class="btn btn-outline-primary">
+                      <i class="bi bi-info-circle"></i> View Details
+                    </a>
+                    <a href="{% url 'bookings:book_hostel' hostel.id %}" class="btn btn-success">
+                      <i class="bi bi-calendar-check"></i> Book Now
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Pagination -->
+          {% if page_obj.has_other_pages %}
+          <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+              {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                  <i class="bi bi-chevron-double-left"></i>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+              {% else %}
+              <li class="page-item disabled">
+                <a class="page-link" href="#"><i class="bi bi-chevron-double-left"></i></a>
+              </li>
+              <li class="page-item disabled">
+                <a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a>
+              </li>
+              {% endif %}
+              
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                  <a class="page-link" href="#">{{ num }}</a>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                </li>
+                {% endif %}
+              {% endfor %}
+              
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <i class="bi bi-chevron-right"></i>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <i class="bi bi-chevron-double-right"></i>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a>
+                </li>
+                <li class="page-item disabled">
+                  <a class="page-link" href="#"><i class="bi bi-chevron-double-right"></i></a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+          
+          {% else %}
+          <div class="text-center py-5">
+            <img src="{% static 'images/no-results.svg' %}" alt="No results" style="max-width: 200px;" class="mb-3">
+            <h3>No Hostels Found</h3>
+            <p class="text-muted">
+              Try adjusting your search criteria or check back later for new listings.
+            </p>
+            <a href="{% url 'hostel_list' %}" class="btn btn-primary mt-2">
+              <i class="bi bi-arrow-repeat"></i> Reset Search
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Advanced Filter Modal -->
+<div class="modal fade" id="advancedFilterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="filterModalLabel">Advanced Filters</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="get" action="{% url 'hostel_list' %}" id="advancedFilterForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="search_query_modal" class="form-label">Search Keywords</label>
+              <input type="text" name="search_query" id="search_query_modal" class="form-control" 
+                     value="{{ request.GET.search_query|default:'' }}">
+            </div>
+            
+            <div class="col-md-6">
+              <label for="university_modal" class="form-label">University</label>
+              {{ search_form.university }}
+            </div>
+            
+            <div class="col-md-6">
+              <label for="city_modal" class="form-label">City</label>
+              {{ search_form.city }}
+            </div>
+            
+            <div class="col-md-6">
+              <label for="room_type_modal" class="form-label">Room Type</label>
+              {{ search_form.room_type }}
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">Price Range (KSh/month)</label>
+              <div class="row g-2">
+                <div class="col">
+                  {{ search_form.min_price }}
+                </div>
+                <div class="col">
+                  {{ search_form.max_price }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <label for="gender_restriction_modal" class="form-label">Gender</label>
+              {{ search_form.gender_restriction }}
+            </div>
+            
+            <div class="col-md-6">
+              <label for="max_distance_modal" class="form-label">Max Distance from University (km)</label>
+              {{ search_form.max_distance }}
+            </div>
+            
+            <div class="col-12">
+              <label class="form-label">Amenities</label>
+              <div class="row g-2">
+                {% for amenity in search_form.amenities %}
+                <div class="col-md-4 col-6">
+                  <div class="form-check">{{ amenity }}</div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a href="{% url 'hostel_list' %}" class="btn btn-outline-danger">Clear All</a>
+        <button type="submit" form="advancedFilterForm" class="btn btn-primary">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all toggle-shortlist buttons
+    const shortlistButtons = document.querySelectorAll('.toggle-shortlist');
+    shortlistButtons.forEach(button => {
+        // Remove any existing event listeners first to prevent duplicates
+        button.removeEventListener('click', toggleShortlist);
+        // Add the event listener
+        button.addEventListener('click', toggleShortlist);
+    });
+    
+    // Check the initial shortlisted count on page load and update badge
+    updateShortlistedCount();
+    
+    // Add hover effect to cards
+    const cards = document.querySelectorAll('.shadow-hover');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.classList.add('shadow');
+        });
+        card.addEventListener('mouseleave', function() {
+            this.classList.remove('shadow');
+        });
+    });
+});
+
+function toggleShortlist(event) {
+  event.preventDefault(); // Prevent any default action
+  event.stopPropagation(); // Stop event propagation to prevent carousel interaction
+  
+  const button = event.currentTarget;
+  const hostelId = button.getAttribute('data-hostel-id');
+  const isShortlisted = button.getAttribute('data-shortlisted') === 'true';
+  
+  const formData = new FormData();
+  formData.append('hostel_id', hostelId);
+  formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+  
+  fetch('/hostels/toggle-shortlist/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+      }
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.status === 'success') {
+          // Update button icon based on new state
+          const icon = button.querySelector('i');
+          
+          if (data.is_shortlisted) {
+              icon.classList.remove('bi-heart');
+              icon.classList.add('bi-heart-fill', 'text-danger');
+              button.setAttribute('data-shortlisted', 'true');
+              
+              // Show a toast notification
+              showToast('Hostel added to your shortlist', 'success');
+          } else {
+              icon.classList.remove('bi-heart-fill', 'text-danger');
+              icon.classList.add('bi-heart');
+              button.setAttribute('data-shortlisted', 'false');
+              
+              // Show a toast notification
+              showToast('Hostel removed from your shortlist', 'info');
+          }
+
+          // Update the badge count after every toggle
+          updateShortlistedCount();
+      }
+  })
+  .catch(error => {
+      console.error('Error:', error);
+      showToast('Failed to update shortlist. Please try again.', 'danger');
+  });
+}
+
+
+// Function to update the shortlist count in the sidebar
+function updateShortlistedCount() {
+    fetch('/hostels/get-shortlisted-count/', {  // You'll need to create a view to get the count
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const badge = document.querySelector('.nav-link[href="{% url "user_shortlist" %}"] .badge');
+        
+        if (badge) {
+            if (data.shortlisted_count > 0) {
+                badge.textContent = data.shortlisted_count;  // Update the badge count with the new count
+                badge.style.display = 'inline-block';  // Make sure the badge is visible
+            } else {
+                badge.style.display = 'none';  // Hide the badge if the count is 0
+            }
+        } else if (data.shortlisted_count > 0) {
+            // If badge doesn't exist, create it and append it to the sidebar
+            const favoritesLink = document.querySelector('.nav-link[href="{% url "user_shortlist" %}"]');
+            if (favoritesLink) {
+                const badgeElement = document.createElement('span');
+                badgeElement.classList.add('ms-auto', 'badge', 'rounded-pill', 'bg-danger');
+                badgeElement.textContent = data.shortlisted_count;
+                favoritesLink.appendChild(badgeElement);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching shortlisted count:', error);
+    });
+}
+
+// Create a variable to track when a toast is already showing
+let isToastShowing = false;
+
+// Toast notification function
+function showToast(message, type = 'info') {
+    // If a toast is already showing, don't show another one
+    if (isToastShowing) return;
+    
+    isToastShowing = true;
+    
+    // Check if toast container exists, if not create it
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '5';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create toast element
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast align-items-center border-0 bg-${type} text-white`;
+    toastEl.setAttribute('role', 'alert');
+    toastEl.setAttribute('aria-live', 'assertive');
+    toastEl.setAttribute('aria-atomic', 'true');
+    
+    // Toast content
+    toastEl.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Add to container
+    toastContainer.appendChild(toastEl);
+    
+    // Initialize and show toast
+    const toast = new bootstrap.Toast(toastEl, {
+        delay: 3000
+    });
+    toast.show();
+    
+    // Remove after hiding
+    toastEl.addEventListener('hidden.bs.toast', function() {
+        toastEl.remove();
+        isToastShowing = false; // Reset the flag when toast is hidden
+    });
+}
+</script>
+{% endblock %}
+
+{% endblock %}

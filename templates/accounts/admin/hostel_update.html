@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load hostel_extras %}
+
+{% block title %}Edit Hostel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Edit Hostel: {{ hostel.name }}</h1>
+        <div>
+            <a href="{% url 'admin_hostel_detail' hostel.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Details
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 fw-bold text-primary">Hostel Information</h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <h6 class="fw-bold">Basic Information</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Hostel Name*</label>
+                            {{ form.name|attr:"class:form-control" }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.university_name.id_for_label }}" class="form-label">University</label>
+                            {{ form.university_name|attr:"class:form-control" }}
+                        </div>
+                        <div class="col-12">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description*</label>
+                            {{ form.description|attr:"class:form-control" }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="fw-bold">Location</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Street Address*</label>
+                            {{ form.address|attr:"class:form-control" }}
+                            {% if form.address.errors %}
+                                <div class="text-danger small">{{ form.address.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.city.id_for_label }}" class="form-label">City*</label>
+                            {{ form.city|attr:"class:form-control" }}
+                            {% if form.city.errors %}
+                                <div class="text-danger small">{{ form.city.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.state.id_for_label }}" class="form-label">State/Province*</label>
+                            {{ form.state|attr:"class:form-control" }}
+                            {% if form.state.errors %}
+                                <div class="text-danger small">{{ form.state.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.zip_code.id_for_label }}" class="form-label">Postal/ZIP Code*</label>
+                            {{ form.zip_code|attr:"class:form-control" }}
+                            {% if form.zip_code.errors %}
+                                <div class="text-danger small">{{ form.zip_code.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.distance_from_university.id_for_label }}" class="form-label">
+                                Distance from University (km)
+                            </label>
+                            {{ form.distance_from_university|attr:"class:form-control" }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h6 class="fw-bold">Rules & Amenities</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="{{ form.rules.id_for_label }}" class="form-label">House Rules</label>
+                            {{ form.rules|attr:"class:form-control" }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label d-block">Amenities</label>
+                            <div class="row">
+                                {% for choice in form.amenities %}
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            {{ choice.tag }}
+                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                {{ choice.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'admin_hostel_detail' hostel.id %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

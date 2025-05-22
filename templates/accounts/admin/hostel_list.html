@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Hostels{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Manage Hostels</h1>
+        <a href="{% url 'admin_hostel_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Create New Hostel
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h6 class="m-0 fw-bold text-primary">Hostel List ({{ total_hostels }})</h6>
+                </div>
+                <div class="col-auto">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search hostels...">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Owner</th>
+                            <th>Location</th>
+                            <th>Rooms</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hostel in hostels %}
+                            <tr>
+                                <td>{{ hostel.id }}</td>
+                                <td>{{ hostel.name }}</td>
+                                <td>{{ hostel.owner.user.get_full_name }}</td>
+                                <td>{{ hostel.city }}, {{ hostel.state }}</td>
+                                <td>{{ hostel.rooms.count }}</td>
+                                <td>{{ hostel.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'admin_hostel_detail' hostel.id %}" class="btn btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'admin_hostel_update' hostel.id %}" class="btn btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'admin_hostel_delete' hostel.id %}" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="py-5">
+                                        <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                                        <p class="mb-0">No hostels have been created yet.</p>
+                                        <a href="{% url 'admin_hostel_create' %}" class="btn btn-sm btn-primary mt-3">
+                                            <i class="fas fa-plus-circle me-2"></i>Create First Hostel
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple search functionality
+    $(document).ready(function(){
+        $("#searchInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("table tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+</script>
+{% endblock %}

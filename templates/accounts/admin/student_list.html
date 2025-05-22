@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Students{% endblock %}
+
+{% block content %}
+<!-- Custom CSS for enhanced styling -->
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.03);
+        transition: all 0.2s ease;
+    }
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+    .view-btn {
+        background-color: #e8f4ff;
+        color: #0d6efd;
+        border: none;
+    }
+    .view-btn:hover {
+        background-color: #d1e7ff;
+    }
+    .edit-btn {
+        background-color: #fff4e0;
+        color: #fd7e14;
+        border: none;
+    }
+    .edit-btn:hover {
+        background-color: #ffe8c4;
+    }
+    .delete-btn {
+        background-color: #ffeeee;
+        color: #dc3545;
+        border: none;
+    }
+    .delete-btn:hover {
+        background-color: #ffd7d7;
+    }
+    .email-link {
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .email-link:hover {
+        color: var(--bs-primary);
+    }
+    .avatar-circle {
+        object-fit: cover;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background-color: #f8fafc;
+        border-radius: 12px;
+    }
+    .empty-state-icon {
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .card {
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        transition: all 0.3s;
+    }
+    .search-input:focus {
+        box-shadow: none;
+        border-color: var(--bs-primary);
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-lg-7">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                <h2 class="fw-bold text-dark mb-2 mb-md-0">Student Management</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 bg-transparent">
+                        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active fw-semibold" aria-current="page">Students</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="d-flex flex-column flex-md-row gap-2 justify-content-lg-end mt-3 mt-lg-0">
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-file-export me-1"></i> Export
+                    </button>
+                    <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="exportDropdown">
+                        <li><a class="dropdown-item d-flex align-items-center" href="{% url 'export_students_excel' %}">
+                            <i class="fas fa-file-excel text-success me-2"></i> Export to Excel
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center" href="{% url 'export_students_pdf' %}">
+                            <i class="fas fa-file-pdf text-danger me-2"></i> Export to PDF
+                        </a></li>
+                    </ul>
+                </div>
+                <a href="{% url 'student_add' %}" class="btn btn-primary d-flex align-items-center">
+                    <i class="fas fa-plus me-2"></i> Add Student
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card border-0 rounded-3 overflow-hidden">
+        <div class="card-header bg-white py-3 border-bottom border-light">
+            <div class="row align-items-center">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5 class="mb-0 fw-bold text-dark">All Students</h5>
+                    <span class="badge bg-primary header-badge">{{ students|length }}</span>
+                </div>
+                <div class="col-md-8">
+                    <form class="d-flex" method="get">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input class="form-control ps-0 border-start-0 search-input" type="search" placeholder="Search by name, email or ID..." name="q" 
+                                value="{{ request.GET.q|default:'' }}">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th scope="col" class="ps-4 py-3 text-uppercase text-muted small fw-bold">ID</th>
+                            <th scope="col" class="py-3 text-uppercase text-muted small fw-bold">Name</th>
+                            <th scope="col" class="py-3 text-uppercase text-muted small fw-bold">Email</th>
+                            <th scope="col" class="py-3 text-uppercase text-muted small fw-bold">Phone</th>
+                            <th scope="col" class="py-3 text-uppercase text-muted small fw-bold">Profile</th>
+                            <th scope="col" class="py-3 text-uppercase text-muted small fw-bold">Joined</th>
+                            <th scope="col" class="py-3 text-uppercase text-muted small fw-bold">Status</th>
+                            <th scope="col" class="pe-4 py-3 text-uppercase text-muted small fw-bold text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for student in students %}
+                        <tr class="align-middle">
+                            <th scope="row" class="ps-4 fw-normal text-muted">{{ student.id }}</th>
+                            <td>
+                                <div class="d-flex align-items-center py-2">
+                                    {% if student.student_profile.profile_picture %}
+                                    <div class="me-3">
+                                        <img src="{{ student.student_profile.profile_picture.url }}" alt="{{ student.full_name }}" 
+                                            class="rounded-circle avatar-circle border" width="44" height="44">
+                                    </div>
+                                    {% else %}
+                                    <div class="avatar-circle bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px;">
+                                        <i class="fas fa-user text-secondary"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold">{{ student.full_name }}</h6>
+                                        <span class="text-muted small d-md-none">
+                                            <a href="mailto:{{ student.email }}" class="email-link">
+                                                <i class="far fa-envelope me-1"></i>{{ student.email }}
+                                            </a>
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <a href="mailto:{{ student.email }}" class="email-link">
+                                    <i class="far fa-envelope me-1"></i>{{ student.email }}
+                                </a>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <a href="tel:{{ student.phone_number }}" class="email-link">
+                                    <i class="fas fa-phone me-1"></i>{{ student.phone_number }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if student.student_profile %}
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success small rounded-pill px-2">100%</span>
+                                </div>
+                                {% else %}
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 30%"></div>
+                                    </div>
+                                    <span class="badge bg-warning-subtle text-warning small rounded-pill px-2">30%</span>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="far fa-calendar-alt text-muted me-2"></i>
+                                    <span class="small">{{ student.date_joined|date:"M d, Y" }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if student.is_active %}
+                                <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2">
+                                    <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i> Active
+                                </span>
+                                {% else %}
+                                <span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2">
+                                    <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i> Inactive
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="pe-4">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="{% url 'student_detail' student.id %}" class="action-btn view-btn" data-bs-toggle="tooltip" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'student_update' student.id %}" class="action-btn edit-btn" data-bs-toggle="tooltip" title="Edit Student">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="action-btn delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal{{ student.id }}" title="Delete Student">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" id="deleteModal{{ student.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ student.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow">
+                                            <div class="modal-header border-0">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ student.id }}">Confirm Deletion</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="text-center mb-4">
+                                                    <div class="avatar-circle bg-danger-subtle text-danger mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                                    </div>
+                                                    <h5>Delete Student Account?</h5>
+                                                    <p class="text-muted">Are you sure you want to delete <strong>{{ student.full_name }}</strong>'s account? This action cannot be undone.</p>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-0">
+                                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                <a href="{% url 'student_delete' student.id %}" class="btn btn-danger">Delete Account</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state mx-auto my-5">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-user-graduate text-primary fa-2x"></i>
+                                    </div>
+                                    <h4 class="mb-3">No Students Found</h4>
+                                    <p class="text-muted mb-4 mx-auto" style="max-width: 500px;">
+                                        No student accounts have been registered in the system yet. 
+                                        Get started by adding your first student to the database.
+                                    </p>
+                                    <a href="{% url 'student_add' %}" class="btn btn-primary px-4 py-2">
+                                        <i class="fas fa-plus-circle me-2"></i> Add Your First Student
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-white py-3 border-top border-light">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <p class="mb-0 text-muted small">
+                        {% if students|length > 0 %}
+                        Showing <span class="fw-semibold">{{ students|length }}</span> out of <span class="fw-semibold">{{ paginator.count|default:students|length }}</span> students
+                        {% else %}
+                        No students to display
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    {% if is_paginated %}
+                    <nav aria-label="Page navigation" class="float-md-end">
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="First">
+                                    <span aria-hidden="true"><i class="fas fa-angle-double-left"></i></span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="Previous">
+                                    <span aria-hidden="true"><i class="fas fa-angle-left"></i></span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for i in paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                                {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ i }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="Next">
+                                    <span aria-hidden="true"><i class="fas fa-angle-right"></i></span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="Last">
+                                    <span aria-hidden="true"><i class="fas fa-angle-double-right"></i></span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Initialize tooltips -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                boundary: document.body
+            })
+        })
+    });
+</script>
+{% endblock %}

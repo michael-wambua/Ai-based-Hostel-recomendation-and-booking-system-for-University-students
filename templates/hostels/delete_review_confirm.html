@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Review - {{ hostel.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Confirm Delete</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Are you sure you want to delete your review?</h5>
+                    
+                    <div class="review-summary my-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="rating">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                    <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="ms-2 fw-bold">{{ review.rating }} out of 5</span>
+                        </div>
+                        
+                        <h4 class="review-title">{{ review.title }}</h4>
+                        <p class="review-content">{{ review.content|truncatewords:30 }}</p>
+                        
+                        {% if review.reviewimage_set.exists %}
+                        <p><i class="fas fa-image"></i> This review has {{ review.reviewimage_set.count }} image{{ review.reviewimage_set.count|pluralize }}</p>
+                        {% endif %}
+                        
+                        <p class="text-muted"><small>Posted on {{ review.created_at|date:"F j, Y" }}</small></p>
+                    </div>
+                    
+                    <p class="text-danger">This action cannot be undone.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'hostel_reviews' hostel.id %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger">Delete Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

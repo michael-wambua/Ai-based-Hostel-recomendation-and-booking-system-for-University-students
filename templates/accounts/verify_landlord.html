@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verify Landlord Application{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-lg border-0 rounded-lg mb-5">
+                <div class="card-header bg-gradient-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 font-weight-bold">Landlord Verification</h5>
+                    <a href="{% url 'landlord_verification_list' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-arrow-left mr-1"></i> Back to List
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <!-- Left Column - Profile Information -->
+                        <div class="col-md-4">
+                            <div class="text-center mb-4">
+                                <div class="profile-image-container mx-auto mb-3"
+                                    style="width: 180px; height: 180px; overflow: hidden; border-radius: 50%; border: 4px solid #f8f9fc; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
+                                
+                                    {% if request.user.landlord_profile.profile_picture %}
+                                    <img src="{{ landlord.profile_picture.url }}" class="w-100 h-100 object-fit-cover"
+                                        alt="Profile picture">
+                                    {% else %}
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center w-100 h-100">
+                                        <i class="fas fa-user fa-3x"></i>
+                                    </div>
+                                    {% endif %}
+                                    </div>
+                                <h4 class="font-weight-bold text-primary mb-1">{{ landlord.user.full_name }}</h4>
+                                <p class="text-muted">{{ landlord.hostel_name|default:"No hostel name provided" }}</p>
+                            </div>
+                            
+                            <div class="card shadow-sm border-left-primary mb-4">
+                                <div class="card-header bg-light py-3">
+                                    <h6 class="mb-0 font-weight-bold text-primary">
+                                        <i class="fas fa-address-card mr-2"></i>Contact Information
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="contact-item mb-3 d-flex align-items-center">
+                                        <div class="icon-wrapper mr-3 text-primary">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Email</small>
+                                            <strong>{{ landlord.user.email }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="contact-item mb-3 d-flex align-items-center">
+                                        <div class="icon-wrapper mr-3 text-primary">
+                                            <i class="fas fa-phone"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Phone</small>
+                                            <strong>{{ landlord.user.phone_number|default:"Not provided" }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="contact-item mb-3 d-flex align-items-center">
+                                        <div class="icon-wrapper mr-3 text-primary">
+                                            <i class="fas fa-comment-alt"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Preferred Contact</small>
+                                            <strong>{{ landlord.get_preferred_contact_method_display }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="contact-item d-flex align-items-center">
+                                        <div class="icon-wrapper mr-3 text-primary">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Available Hours</small>
+                                            <strong>{{ landlord.available_hours|default:"Not specified" }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column - Verification Details -->
+                        <div class="col-md-8">
+                            <div class="card shadow-sm border-left-info mb-4">
+                                <div class="card-header bg-light py-3">
+                                    <h6 class="mb-0 font-weight-bold text-info">
+                                        <i class="fas fa-user-tie mr-2"></i>Landlord Information
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <small class="text-muted d-block">Property Type</small>
+                                            <h6>{{ landlord.get_property_ownership_type_display }}</h6>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <small class="text-muted d-block">Experience</small>
+                                            <h6>{{ landlord.years_of_experience }} years</h6>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0">
+                                        <small class="text-muted d-block">Bio</small>
+                                        <div class="p-3 bg-light rounded mt-1">
+                                            {{ landlord.bio|default:"No bio provided"|linebreaks }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card shadow-sm border-left-warning mb-4">
+                                <div class="card-header bg-light py-3">
+                                    <h6 class="mb-0 font-weight-bold text-warning">
+                                        <i class="fas fa-file-alt mr-2"></i>Verification Documents
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100 border-0 shadow-sm text-center">
+                                                <div class="card-body d-flex flex-column justify-content-between">
+                                                    <div>
+                                                        <div class="document-icon mb-3">
+                                                            <i class="fas fa-id-card fa-3x text-primary opacity-50"></i>
+                                                        </div>
+                                                        <h6 class="font-weight-bold">ID Document</h6>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        {% if landlord.id_document %}
+                                                            <a href="{{ landlord.id_document.url }}" target="_blank" class="btn btn-primary btn-sm btn-block">
+                                                                <i class="fas fa-eye mr-1"></i> View Document
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="badge badge-light py-2 px-3">Not provided</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100 border-0 shadow-sm text-center">
+                                                <div class="card-body d-flex flex-column justify-content-between">
+                                                    <div>
+                                                        <div class="document-icon mb-3">
+                                                            <i class="fas fa-home fa-3x text-success opacity-50"></i>
+                                                        </div>
+                                                        <h6 class="font-weight-bold">Property Proof</h6>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        {% if landlord.property_proof %}
+                                                            <a href="{{ landlord.property_proof.url }}" target="_blank" class="btn btn-success btn-sm btn-block">
+                                                                <i class="fas fa-eye mr-1"></i> View Document
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="badge badge-light py-2 px-3">Not provided</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100 border-0 shadow-sm text-center">
+                                                <div class="card-body d-flex flex-column justify-content-between">
+                                                    <div>
+                                                        <div class="document-icon mb-3">
+                                                            <i class="fas fa-file-invoice fa-3x text-info opacity-50"></i>
+                                                        </div>
+                                                        <h6 class="font-weight-bold">Utility Bill</h6>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        {% if landlord.utility_bill %}
+                                                            <a href="{{ landlord.utility_bill.url }}" target="_blank" class="btn btn-info btn-sm btn-block">
+                                                                <i class="fas fa-eye mr-1"></i> View Document
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="badge badge-light py-2 px-3">Not provided</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <form method="post" action="{% url 'verify_landlord' landlord.pk %}">
+                                {% csrf_token %}
+                                <div class="card shadow-sm border-left-purple mb-3">
+                                    <div class="card-header bg-light py-3">
+                                        <h6 class="mb-0 font-weight-bold text-primary">
+                                            <i class="fas fa-clipboard-check mr-2"></i>Verification Decision
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group mb-4">
+                                            <label for="verification_notes" class="font-weight-bold text-dark">
+                                                <i class="fas fa-comment-dots mr-1"></i> Notes (will be shared with the landlord)
+                                            </label>
+                                            <textarea name="verification_notes" id="verification_notes" rows="4" 
+                                                class="form-control bg-light" 
+                                                placeholder="Enter your verification notes here...">{{ landlord.verification_notes }}</textarea>
+                                        </div>
+                                        
+                                        <div class="verification-actions text-right mt-4">
+                                            <div class="btn-group">
+                                                <button type="submit" name="action" value="reject" class="btn btn-danger px-4 py-2 mr-2">
+                                                    <i class="fas fa-times-circle mr-2"></i> Reject Application
+                                                </button>
+                                                <button type="submit" name="action" value="approve" class="btn btn-success px-4 py-2">
+                                                    <i class="fas fa-check-circle mr-2"></i> Approve Application
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

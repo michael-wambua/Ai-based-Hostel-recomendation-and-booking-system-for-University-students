@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1>{{ title }}</h1>
+    
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'landlord_hostels' %}">Hostels</a></li>
+            {% if hostel %}
+            <li class="breadcrumb-item"><a href="{% url 'hostel_detail' hostel.id %}">{{ hostel.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">Add New</li>
+            {% endif %}
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" action="{% if hostel %}{% url 'edit_hostel' hostel.id %}{% else %}{% url 'add_hostel' %}{% endif %}">
+                {% csrf_token %}
+                
+                <!-- Display form errors if any -->
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Please correct the errors below.</strong>
+                    </div>
+                {% endif %}
+                
+                <h4 class="mb-3">Basic Information</h4>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Hostel Name*</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="text-danger small">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.university_name.id_for_label }}" class="form-label">University*</label>
+                        {{ form.university_name }}
+                        {% if form.university_name.errors %}
+                        <div class="text-danger small">{{ form.university_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description*</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger small">{{ form.description.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">Provide a detailed description of your hostel, including unique features and benefits.</div>
+                </div>
+                
+                <h4 class="mt-4 mb-3">Location</h4>
+                
+                <div class="mb-3">
+                    <label for="{{ form.address.id_for_label }}" class="form-label">Address*</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                    <div class="text-danger small">{{ form.address.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.city.id_for_label }}" class="form-label">City*</label>
+                        {{ form.city }}
+                        {% if form.city.errors %}
+                        <div class="text-danger small">{{ form.city.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.state.id_for_label }}" class="form-label">State*</label>
+                        {{ form.state }}
+                        {% if form.state.errors %}
+                        <div class="text-danger small">{{ form.state.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.zip_code.id_for_label }}" class="form-label">ZIP Code*</label>
+                        {{ form.zip_code }}
+                        {% if form.zip_code.errors %}
+                        <div class="text-danger small">{{ form.zip_code.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude*</label>
+                        {{ form.latitude }}
+                        {% if form.latitude.errors %}
+                        <div class="text-danger small">{{ form.latitude.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude*</label>
+                        {{ form.longitude }}
+                        {% if form.longitude.errors %}
+                        <div class="text-danger small">{{ form.longitude.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                     <div class="col-md-4 mb-3">
+                        <label for="{{ form.distance_from_university.id_for_label }}" class="form-label">Distance from University (km)*</label>
+                        {{ form.distance_from_university }}
+                        {% if form.distance_from_university.errors %}
+                        <div class="text-danger small">{{ form.distance_from_university.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div id="map" style="height: 300px;" class="mb-2"></div>
+                    <small class="text-muted">Drag the marker to set the exact location of your hostel.</small>
+                </div>
+                
+                <h4 class="mt-4 mb-3">Hostel Rules & Policies</h4>
+                
+                <div class="mb-3">
+                    <label for="{{ form.rules.id_for_label }}" class="form-label">Rules & Policies*</label>
+                    {{ form.rules }}
+                    {% if form.rules.errors %}
+                    <div class="text-danger small">{{ form.rules.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">List all important rules for your hostel such as curfew, visitor policy, etc.</div>
+                </div>
+                
+                <h4 class="mt-4 mb-3">Amenities</h4>
+                <div class="mb-3">
+                    <label for="{{ form.amenities.id_for_label }}" class="form-label">Amenities*</label>
+                    {{ form.amenities }}
+                    {% if form.amenities.errors %}
+                    <div class="text-danger small">{{ form.amenities.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">Enter amenities separated by commas (e.g., WiFi, Parking, Laundry).</div>
+                </div>
+                <h4 class="mt-4 mb-3">Photos</h4>
+                
+                {{ image_formset.management_form }}
+                
+                <div class="row image-formset">
+                    {% for image_form in image_formset %}
+                    <div class="col-md-4 mb-3 image-form">
+                        {{ image_form.id }}
+                        {% if image_form.instance.image %}
+                            <div class="card mb-2">
+                                <img src="{{ image_form.instance.image.url }}" class="card-img-top img-thumbnail" alt="Hostel image">
+                                <div class="card-body p-2">
+                                    <div class="form-check">
+                                        {{ image_form.is_main }}
+                                        <label class="form-check-label" for="{{ image_form.is_main.id_for_label }}">
+                                            Main Image
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        {{ image_form.DELETE }}
+                                        <label class="form-check-label" for="{{ image_form.DELETE.id_for_label }}">
+                                            Delete
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="card">
+                                <div class="card-body">
+                                    <label for="{{ image_form.image.id_for_label }}" class="form-label">Upload Image</label>
+                                    {{ image_form.image }}
+                                    {% if image_form.image.errors %}
+                                    <div class="text-danger small">{{ image_form.image.errors }}</div>
+                                    {% endif %}
+                                    <div class="form-check mt-2">
+                                        {{ image_form.is_main }}
+                                        <label class="form-check-label" for="{{ image_form.is_main.id_for_label }}">
+                                            Main Image
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                    
+                <div class="text-center my-3">
+                    <button type="button" class="btn btn-outline-secondary add-image-form">
+                        <i class="bi bi-plus-circle"></i> Add Another Image
+                    </button>
+                </div>
+                
+                <h4 class="mt-4 mb-3">Contact Information</h4>
+                
+                <div class="row">                    
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.contact_person.id_for_label }}" class="form-label">Contact Person*</label>
+                            <input type="text" name="contact_person" class="form-control" id="{{ form.contact_person.id_for_label }}" placeholder="Enter contact person's name" value="{{ form.contact_person.value|default_if_none:'' }}">
+                            {% if form.contact_person.errors %}
+                            <div class="text-danger small">{{ form.contact_person.errors }}</div>
+                            {% endif %}
+                        </div>
+                    
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.contact_number.id_for_label }}" class="form-label">Contact Number*</label>
+                            <input type="tel" name="contact_number" class="form-control" id="{{ form.contact_number.id_for_label }}" placeholder="Enter contact number" value="{{ form.contact_number.value|default_if_none:'' }}">
+                            {% if form.contact_number.errors %}
+                            <div class="text-danger small">{{ form.contact_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.contact_email.id_for_label }}" class="form-label">Contact Email*</label>
+                        <input type="email" name="contact_email" class="form-control" id="{{ form.contact_email.id_for_label }}" placeholder="Enter contact email" value="{{ form.contact_email.value|default_if_none:'' }}">
+                        {% if form.contact_email.errors %}
+                        <div class="text-danger small">{{ form.contact_email.errors }}</div>
+                        {% endif %}
+                    </div>
+                <div class="mt-4 d-flex justify-content-between">
+                    {% if hostel %}
+                        <a href="{% url 'hostel_detail' hostel.id %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Hostel</button>
+                    {% else %}
+                        <a href="{% url 'hostel_list' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Submit Hostel</button>
+                    {% endif %}
+                </div>
+                    
+            </form>
+        </div>
+    </div>
+</div>                   
+{% block extra_js %}
+    <script>
+        // Initialize the map
+        function initMap() {
+            const defaultLat = {{ form.latitude.value|default:0 }};
+            const defaultLng = {{ form.longitude.value|default:0 }};
+            
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: defaultLat || 0, lng: defaultLng || 0 },
+                zoom: defaultLat ? 15 : 6
+            });
+            
+            const marker = new google.maps.Marker({
+                position: { lat: defaultLat || 0, lng: defaultLng || 0 },
+                map: map,
+                draggable: true
+            });
+            
+            // Update lat/lng fields when marker is dragged
+            google.maps.event.addListener(marker, 'dragend', function() {
+                const position = marker.getPosition();
+                document.getElementById('{{ form.latitude.id_for_label }}').value = position.lat();
+                document.getElementById('{{ form.longitude.id_for_label }}').value = position.lng();
+            });
+            
+            // If no default coordinates, use location search to center map
+            if (!defaultLat && !defaultLng) {
+                // Get university and city from form
+                const university = document.getElementById('{{ form.university_name.id_for_label }}').value;
+                const city = document.getElementById('{{ form.city.id_for_label }}').value;
+                
+                if (university && city) {
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({ 'address': university + ', ' + city }, function(results, status) {
+                        if (status === 'OK') {
+                            map.setCenter(results[0].geometry.location);
+                            marker.setPosition(results[0].geometry.location);
+                            
+                            document.getElementById('{{ form.latitude.id_for_label }}').value = results[0].geometry.location.lat();
+                            document.getElementById('{{ form.longitude.id_for_label }}').value = results[0].geometry.location.lng();
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Handle dynamic formset for images
+        Ksh(document).ready(function() {
+            const formsetContainer = Ksh('.image-formset');
+            const addButton = Ksh('.add-image-form');
+            const totalForms = Ksh('#id_images-TOTAL_FORMS');
+            
+            addButton.click(function() {
+                const formCount = parseInt(totalForms.val());
+                const newForm = formsetContainer.children().first().clone(true);
+                
+                // Update form index
+                newForm.find(':input').each(function() {
+                    const name = Ksh(this).attr('name').replace('-0-', '-' + formCount + '-');
+                    const id = 'id_' + name;
+                    Ksh(this).attr('name', name);
+                    Ksh(this).attr('id', id);
+                    Ksh(this).val('');
+                });
+                
+                // Clear image preview if any
+                newForm.find('img').attr('src', '');
+                
+                // Update labels
+                newForm.find('label').each(function() {
+                    const newFor = Ksh(this).attr('for').replace('-0-', '-' + formCount + '-');
+                    Ksh(this).attr('for', newFor);
+                });
+                
+                // Append new form
+                formsetContainer.append(newForm);
+                totalForms.val(formCount + 1);
+            });
+        });
+    </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap">
+    </script>
+{% endblock %}
+{% endblock content %}

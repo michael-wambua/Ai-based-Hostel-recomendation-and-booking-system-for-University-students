@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+
+{% block title %}Landlord Payments Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="fw-bold text-primary">
+                <i class="fas fa-money-bill-wave me-2"></i>Payment Dashboard
+            </h1>
+            <p class="text-muted">Manage all your property payments in one place</p>
+        </div>
+        <div class="col-md-4 d-flex justify-content-end align-items-center">
+            <a href="{% url 'payments:export_payments_pdf' %}" class="btn btn-danger me-2">
+                <i class="fas fa-file-pdf me-1"></i> Export PDF
+            </a>
+            <a href="{% url 'payments:export_payments_excel' %}" class="btn btn-success">
+                <i class="fas fa-file-excel me-1"></i> Export Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    {% if messages %}
+        <div class="messages mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Action Required Banner -->
+    {% if confirm_count > 0 %}
+        <div class="alert alert-warning mb-4 shadow-sm border-start border-warning border-4">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="fas fa-exclamation-circle fa-2x text-warning"></i>
+                </div>
+                <div>
+                    <h5 class="alert-heading fw-bold mb-1">Action Required</h5>
+                    <p class="mb-0">You have <span class="badge bg-warning text-dark fw-bold fs-6">{{ confirm_count }}</span> payment{{ confirm_count|pluralize:" requires,s require" }} confirmation.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Dashboard Cards -->
+    <div class="row mb-4">
+        <!-- Payments To Confirm Card -->
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-info bg-gradient text-white py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <h5 class="card-title mb-0 fw-bold">Payments Awaiting Confirmation</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if payments_to_confirm %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Student</th>
+                                        <th>Hostel/Room</th>
+                                        <th>Amount</th>
+                                        <th>Payment Date</th>
+                                        <th>Transaction Code</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in payments_to_confirm %}
+                                        <tr>
+                                            <td><span class="badge bg-secondary">#{{ payment.invoice.id }}</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-info text-white me-2">
+                                                        {{ payment.invoice.booking.student.get_full_name|default:payment.invoice.booking.student.username|first|upper }}
+                                                    </div>
+                                                    {{ payment.invoice.booking.student.get_full_name|default:payment.invoice.booking.student.username }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold">{{ payment.invoice.booking.room.hostel.name }}</span>
+                                                <br>
+                                                <small class="text-muted">Room {{ payment.invoice.booking.room.name }}</small>
+                                            </td>
+                                            <td><span class="fw-bold text-success">Ksh{{ payment.invoice.amount }}</span></td>
+                                            <td>{{ payment.payment_date|date:"M d, Y H:i" }}</td>
+                                            <td><code>{{ payment.transaction_code }}</code></td>
+                                            <td>
+                                                <a href="{% url 'payments:confirm_payment' payment.id %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-check me-1"></i> Confirm
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No payments awaiting confirmation.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Invoices Card -->
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-warning bg-gradient text-dark py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clock me-2"></i>
+                        <h5 class="card-title mb-0 fw-bold">Pending Invoices</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if pending_invoices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Student</th>
+                                        <th>Hostel/Room</th>
+                                        <th>Amount</th>
+                                        <th>Created</th>
+                                        <th>Due Date</th>
+                                        <th>Days Left</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in pending_invoices %}
+                                        <tr>
+                                            <td><span class="badge bg-secondary">#{{ invoice.id }}</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-warning text-dark me-2">
+                                                        {{ invoice.booking.student.get_full_name|default:invoice.booking.student.username|first|upper }}
+                                                    </div>
+                                                    {{ invoice.booking.student.get_full_name|default:invoice.booking.student.username }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold">{{ invoice.booking.room.hostel.name }}</span>
+                                                <br>
+                                                <small class="text-muted">Room {{ invoice.booking.room.name }}</small>
+                                            </td>
+                                            <td><span class="fw-bold text-success">Ksh{{ invoice.amount }}</span></td>
+                                            <td>{{ invoice.created_at|date:"M d, Y" }}</td>
+                                            <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if invoice.days_remaining > 0 %}
+                                                    <span class="badge bg-warning text-dark">{{ invoice.days_remaining }} days</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Overdue</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No pending invoices found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Confirmed Payments Card -->
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-success bg-gradient text-white py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-double me-2"></i>
+                        <h5 class="card-title mb-0 fw-bold">Confirmed Payments</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if confirmed_invoices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Student</th>
+                                        <th>Hostel/Room</th>
+                                        <th>Amount</th>
+                                        <th>Payment Date</th>
+                                        <th>Confirmed Date</th>
+                                        <th>Transaction Code</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in confirmed_invoices %}
+                                        <tr>
+                                            <td><span class="badge bg-secondary">#{{ invoice.id }}</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-success text-white me-2">
+                                                        {{ invoice.booking.student.get_full_name|default:invoice.booking.student.username|first|upper }}
+                                                    </div>
+                                                    {{ invoice.booking.student.get_full_name|default:invoice.booking.student.username }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold">{{ invoice.booking.room.hostel.name }}</span>
+                                                <br>
+                                                <small class="text-muted">Room {{ invoice.booking.room.name }}</small>
+                                            </td>
+                                            <td><span class="fw-bold text-success">Ksh{{ invoice.amount }}</span></td>
+                                            <td>{{ invoice.payment.payment_date|date:"M d, Y" }}</td>
+                                            <td>{{ invoice.payment.confirmed_date|date:"M d, Y" }}</td>
+                                            <td><code>{{ invoice.payment.transaction_code }}</code></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-money-check-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No confirmed payments found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Expired/Cancelled Invoices Card -->
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-danger bg-gradient text-white py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <h5 class="card-title mb-0 fw-bold">Expired/Cancelled Invoices</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if expired_invoices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Student</th>
+                                        <th>Hostel/Room</th>
+                                        <th>Amount</th>
+                                        <th>Created</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in expired_invoices %}
+                                        <tr>
+                                            <td><span class="badge bg-secondary">#{{ invoice.id }}</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-danger text-white me-2">
+                                                        {{ invoice.booking.student.get_full_name|default:invoice.booking.student.username|first|upper }}
+                                                    </div>
+                                                    {{ invoice.booking.student.get_full_name|default:invoice.booking.student.username }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold">{{ invoice.booking.room.hostel.name }}</span>
+                                                <br>
+                                                <small class="text-muted">Room {{ invoice.booking.room.name }}</small>
+                                            </td>
+                                            <td><span class="fw-bold text-success">Ksh{{ invoice.amount }}</span></td>
+                                            <td>{{ invoice.created_at|date:"M d, Y" }}</td>
+                                            <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge bg-danger">{{ invoice.get_status_display }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-excel fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No expired or cancelled invoices found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .card {
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+    
+    .badge {
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

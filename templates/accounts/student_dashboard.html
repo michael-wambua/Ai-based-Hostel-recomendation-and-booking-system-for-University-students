@@ -1,0 +1,1210 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4361ee;
+        --primary-light: #eef2ff;
+        --primary-dark: #3a4db9;
+        --secondary: #2b2d42;
+        --light: #f8f9fa;
+        --light-gray: #f0f2f5;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --text-dark: #111827;
+        --text-muted: #6b7280;
+        --border-radius: 16px;
+        --transition: all 0.2s ease;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.03);
+        --shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+        --card-border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+        background-color: #f9fafb;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: var(--text-dark);
+    }
+
+    .dashboard-container {
+        padding: 2rem 1.5rem;
+        max-width: 1480px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .welcome-header {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .date-display {
+        color: var(--text-muted);
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .dashboard-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .card {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        margin-bottom: 1.5rem;
+        border: var(--card-border);
+        overflow: hidden;
+    }
+
+    .card:hover {
+        box-shadow: var(--shadow);
+        transform: translateY(-3px);
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid var(--light-gray);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+    }
+
+    .card-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        background-color: var(--primary-light);
+        border-radius: 12px;
+        color: var(--primary);
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .btn {
+        border-radius: 12px;
+        padding: 0.6rem 1.25rem;
+        font-weight: 500;
+        transition: var(--transition);
+        font-size: 0.95rem;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+
+    .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn-outline-primary {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .btn-outline-primary:hover {
+        background-color: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+    }
+
+    .btn i {
+        margin-right: 0.5rem;
+    }
+
+    /* Stat cards */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem;
+        border: var(--card-border);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+    }
+
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1.25rem;
+        font-size: 1.4rem;
+    }
+
+    .stat-primary {
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .stat-success {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+
+    .stat-warning {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+    }
+
+    .stat-danger {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        line-height: 1;
+        color: var(--text-dark);
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Match percentage */
+    .match-percentage {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        color: white;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .match-high {
+        background-color: var(--success);
+    }
+
+    .match-medium {
+        background-color: var(--warning);
+    }
+
+    .match-low {
+        background-color: var(--danger);
+    }
+
+    .match-reasons {
+        margin-top: 8px;
+        font-size: 0.8rem;
+    }
+
+    /* Profile info */
+    .profile-card {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+
+    .profile-header {
+        background-color: var(--primary-light);
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .profile-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0 auto 1rem;
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+        border: 3px solid white;
+    }
+
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: var(--text-dark);
+    }
+
+    .profile-id {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .profile-edit-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+    }
+
+    .profile-info {
+        padding: 1.5rem;
+    }
+
+    .profile-info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    .profile-info-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .profile-info-icon {
+        width: 36px;
+        height: 36px;
+        background-color: var(--primary-light);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .profile-info-content {
+        flex: 1;
+    }
+
+    .profile-info-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.25rem;
+    }
+
+    .profile-info-value {
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    /* Preferences */
+    .preferences-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .preferences-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--light-gray);
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .preferences-item:last-child {
+        border-bottom: none;
+    }
+
+    .preference-icon {
+        width: 36px;
+        height: 36px;
+        background-color: var(--primary-light);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .preference-content {
+        flex: 1;
+    }
+
+    .preference-label {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .preference-value {
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .amenity-tag {
+        display: inline-block;
+        padding: 0.35rem 0.8rem;
+        margin: 0.25rem 0.25rem 0.25rem 0;
+        border-radius: 20px;
+        background-color: var(--primary-light);
+        color: var(--primary);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Tables */
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: var(--text-muted);
+        border-top: none;
+        padding: 1rem 1.25rem;
+        font-size: 0.9rem;
+    }
+
+    .table td {
+        padding: 1.25rem;
+        vertical-align: middle;
+        border-color: var(--light-gray);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: var(--primary-light);
+    }
+
+    .hostel-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .hostel-icon {
+        width: 48px;
+        height: 48px;
+        background-color: var(--light-gray);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .hostel-info h6 {
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+
+    .hostel-info small {
+        color: var(--text-muted);
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .status-confirmed {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+
+    .status-pending {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+    }
+
+    .status-cancelled {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+    }
+
+    .status-badge i {
+        margin-right: 0.5rem;
+    }
+
+    /* Events */
+    .event-item {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    .event-item:last-child {
+        border-bottom: none;
+    }
+
+    .event-date {
+        width: 64px;
+        height: 64px;
+        background-color: var(--primary-light);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .event-day {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1;
+    }
+
+    .event-month {
+        font-size: 0.8rem;
+        color: var(--primary);
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .event-details {
+        flex: 1;
+    }
+
+    .event-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        font-size: 1.1rem;
+    }
+
+    .event-desc {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .event-location {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.8rem;
+        background-color: var(--light-gray);
+        border-radius: 6px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .event-location i {
+        margin-right: 0.4rem;
+    }
+
+    /* Empty states */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1.5rem;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state-text {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Chat widget */
+    .chat-widget {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 1000;
+    }
+
+    .chat-button {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 8px 16px rgba(67, 97, 238, 0.25);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .chat-button:hover {
+        transform: scale(1.05) translateY(-3px);
+        box-shadow: 0 12px 20px rgba(67, 97, 238, 0.3);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .dashboard-actions {
+            margin-top: 1rem;
+            width: 100%;
+        }
+        .stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1 class="fw-bold">Welcome back, {{ request.user.get_full_name }}</h1>
+            <p class="text-muted">{{ today|date:"l, F d, Y" }}</p>
+        </div>        
+        <div class="dashboard-actions">
+            <a href="{% url 'hostel_list' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Discover Hostels
+            </a>
+        </div>        
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon stat-primary">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ recommended_hostels|length }}</div>
+                <div class="stat-label">AI Recommendations</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-success">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ saved_hostels|length }}</div>
+                <div class="stat-label">Saved Hostels</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-warning">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ recent_bookings|length }}</div>
+                <div class="stat-label">Active Bookings</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-danger">
+                <i class="fas fa-phone"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">0721000000</div>
+                <div class="stat-label">Emergency Support</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-4">
+            <!-- Profile Card -->
+            <div class="card profile-card">
+                <div class="profile-header">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" class="profile-avatar">
+                    {% else %}
+                        <div class="profile-avatar">
+                            {{ profile.user.first_name|slice:":1" }}{{ profile.user.last_name|slice:":1" }}
+                        </div>
+                    {% endif %}
+                    <h2 class="profile-name">{{ profile.user.first_name }} {{ profile.user.last_name }}</h2>
+                    <p class="profile-id">Student ID: {{ profile.student_id|default:"#12345" }}</p>
+                    <a href="{% url 'student_profile_update' %}" class="btn btn-sm btn-outline-primary profile-edit-btn">
+                        <i class="fas fa-pencil-alt"></i> Edit
+                    </a>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <div class="profile-info-label">Email Address</div>
+                            <div class="profile-info-value">{{ profile.user.email }}</div>
+                        </div>
+                    </div>
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <div class="profile-info-label">Phone Number</div>
+                            <div class="profile-info-value">{{ profile.phone|default:"Not provided" }}</div>
+                        </div>
+                    </div>
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <div class="profile-info-label">University</div>
+                            <div class="profile-info-value">{{ profile.university|default:"Not provided" }}</div>
+                        </div>
+                    </div>
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <div class="profile-info-label">Course of Study</div>
+                            <div class="profile-info-value">{{ profile.course_of_study|default:"Not provided" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>            
+
+            <!-- Preferences Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <div class="card-icon">
+                            <i class="fas fa-sliders-h"></i>
+                        </div>
+                        Housing Preferences
+                    </h5>
+                    <a href="{% url 'update_preferences' %}" class="btn btn-sm btn-primary">Update</a>
+                </div>
+                <div class="card-body">
+                    {% if student.preferences %}
+                    <ul class="preferences-list">
+                        <li class="preferences-item">
+                            <div class="preference-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="preference-content">
+                                <div class="preference-label">Budget Range</div>
+                                <div class="preference-value">Ksh {{ student.preferences.budget_min }} - Ksh {{ student.preferences.budget_max }}</div>
+                            </div>
+                        </li>
+                        <li class="preferences-item">
+                            <div class="preference-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="preference-content">
+                                <div class="preference-label">Preferred Location</div>
+                                <div class="preference-value">{{ student.preferences.location|default:"Not specified" }}</div>
+                            </div>
+                        </li>
+                        <li class="preferences-item">
+                            <div class="preference-icon">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <div class="preference-content">
+                                <div class="preference-label">Room Type</div>
+                                <div class="preference-value">{{ student.preferences.get_room_type_display }}</div>
+                            </div>
+                        </li>
+                        <li class="preferences-item">
+                            <div class="preference-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="preference-content">
+                                <div class="preference-label">Amenities</div>
+                                <div>
+                                    {% for amenity in student.preferences.amenities.all %}
+                                    <span class="amenity-tag">{{ amenity.name }}</span>
+                                    {% empty %}
+                                    <span class="text-muted">No preferences set</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-sliders-h"></i>
+                        </div>
+                        <p class="empty-state-text">Set your preferences to receive personalized hostel recommendations.</p>
+                        <a href="{% url 'update_preferences' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Set Preferences
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Column -->
+        <div class="col-lg-8">
+            <!-- AI Recommended Hostels Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <div class="card-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        Top AI Recommendations
+                    </h5>
+                    <a href="{% url 'all_recommendations' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recommended_hostels %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Hostel</th>
+                                    <th>Location</th>
+                                    <th>Price</th>
+                                    <th>Match</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hostel in recommended_hostels %}
+                                <tr>
+                                    <td>
+                                        <div class="hostel-item">
+                                            <div class="hostel-icon">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <div class="hostel-info">
+                                                <h6>{{ hostel.name }}</h6>
+                                                <small>{{ hostel.available_rooms }} rooms available</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ hostel.address }}</td>
+                                    <td>Ksh {{ hostel.price_per_month }}</td>
+                                    <td>
+                                        {% if hostel.match_score >= 85 %}
+                                        <span class="match-percentage match-high">{{ hostel.match_score }}%</span>
+                                        {% elif hostel.match_score >= 70 %}
+                                        <span class="match-percentage match-medium">{{ hostel.match_score }}%</span>
+                                        {% else %}
+                                        <span class="match-percentage match-low">{{ hostel.match_score }}%</span>
+                                        {% endif %}
+                                        <div class="match-reasons">
+                                            {% for reason in hostel.match_reasons %}
+                                            <small class="d-block text-muted">
+                                                <i class="fas fa-check-circle text-success me-1"></i>{{ reason }}
+                                            </small>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <a href="{% url 'hostel_detail' hostel.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <p class="empty-state-text">Set your preferences to receive AI recommendations tailored to your needs.</p>
+                        <a href="{% url 'update_preferences' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Set Preferences
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Saved Hostels Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <div class="card-icon">
+                            <i class="fas fa-bookmark"></i>
+                        </div>
+                        Saved Hostels
+                    </h5>
+                    <a href="{% url 'user_shortlist' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if saved_hostels %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Hostel</th>
+                                    <th>Location</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hostel in saved_hostels|slice:":3" %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0" style="width: 40px; height: 40px; background-color: var(--light-gray); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-building text-muted"></i>
+                                            </div>
+                                            <div class="ms-3">
+                                                <h6 class="mb-0">{{ hostel.name }}</h6>
+                                                <small class="text-muted">{{ hostel.rooms.count }} rooms available</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ hostel.address }}</td>
+                                    <td>Ksh {{ hostel.rooms.first.price_per_month }}</td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <a href="{% url 'hostel_detail' hostel_id=hostel.id %}">
+                                                <i class="fas fa-eye me-1"></i>
+                                            </a>
+                                            <a href="{% url 'room_list' hostel_id=hostel.id %}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                            </a>
+                                            <a href="{% url 'remove_shortlist' %}?hostel_id={{ hostel.id }}" class="btn btn-sm btn-outline-danger"
+                                               onclick="return confirm('Are you sure you want to remove this hostel from your saved list?');">
+                                                <i class="fas fa-trash-alt me-1"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>                           
+                               
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="far fa-bookmark"></i>
+                        <p>You haven't saved any hostels yet. Browse recommendations to find your perfect place.</p>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i> Find Hostels
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Bookings Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <div class="card-icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        Recent Bookings
+                    </h5>
+                    <a href="{% url 'bookings:student_dashboard' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_bookings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Hostel</th>
+                                    <th>Check-in</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in recent_bookings|slice:":3" %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0" style="width: 40px; height: 40px; background-color: var(--light-gray); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-building text-muted"></i>
+                                            </div>
+                                            <div class="ms-3">
+                                                <h6 class="mb-0">{{ booking.room.hostel.name }}</h6>
+                                                <small class="text-muted">{{ booking.total_amount }} KSh</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ booking.start_date|date:"M d, Y" }}</td>
+                                    <td>{{ booking.duration }} months</td>
+                                    <td>
+                                        {% if booking.status == 'confirmed' %}
+                                        <span class="status-badge status-confirmed">
+                                            <i class="fas fa-check-circle"></i>Confirmed
+                                        </span>
+                                        {% elif booking.status == 'pending' %}
+                                        <span class="status-badge status-pending">
+                                            <i class="fas fa-clock"></i>Pending
+                                        </span>
+                                        {% elif booking.status == 'cancelled' %}
+                                        <span class="status-badge status-cancelled">
+                                            <i class="fas fa-times-circle"></i>Cancelled
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <a href="{% url 'bookings:student_dashboard' %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </a>
+                                            {% if booking.status|lower == 'pending' %}
+                                            <a href="{% url 'cancel-booking' booking.id %}" class="btn btn-sm btn-outline-danger"
+                                               onclick="return confirm('Are you sure you want to cancel this booking?');">
+                                                <i class="fas fa-times me-1"></i>Cancel
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard"></i>
+                        <p>You have no recent bookings. Book a hostel to see your reservations here.</p>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-building me-1"></i>Find a Hostel
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+            </div>
+            
+            <!-- Upcoming Events Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        Upcoming Housing Events
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3" style="width: 60px; height: 60px; background-color: rgba(231, 29, 54, 0.1); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <div style="font-weight: 700; font-size: 1.2rem; color: #e71d36;">15</div>
+                                    <div style="font-size: 0.8rem; color: #e71d36;">APR</div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Housing Fair 2025</h6>
+                                    <p class="mb-1 text-muted small">Connect with hostel owners and get exclusive discounts</p>
+                                    <div><span class="badge bg-light text-dark"><i class="fas fa-map-marker-alt me-1"></i>Student Center</span></div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary">RSVP</button>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3" style="width: 60px; height: 60px; background-color: rgba(46, 196, 182, 0.1); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <div style="font-weight: 700; font-size: 1.2rem; color: #2ec4b6;">22</div>
+                                    <div style="font-size: 0.8rem; color: #2ec4b6;">APR</div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Off-Campus Housing Webinar</h6>
+                                    <p class="mb-1 text-muted small">Learn about your rights as a tenant and safety tips</p>
+                                    <div><span class="badge bg-light text-dark"><i class="fas fa-video me-1"></i>Virtual Event</span></div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary">Register</button>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3" style="width: 60px; height: 60px; background-color: rgba(67, 97, 238, 0.1); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <div style="font-weight: 700; font-size: 1.2rem; color: #4361ee;">30</div>
+                                    <div style="font-size: 0.8rem; color: #4361ee;">APR</div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Roommate Matching Session</h6>
+                                    <p class="mb-1 text-muted small">Find compatible roommates for the next semester</p>
+                                    <div><span class="badge bg-light text-dark"><i class="fas fa-map-marker-alt me-1"></i>Community Hall</span></div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary">Join</button>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Chat Button -->
+<div class="chat-widget">
+    <div class="chat-button">
+        <i class="fas fa-comments"></i>
+    </div>
+</div>
+
+<!-- Add improved Chatbase Script with custom styling -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Initialize chat button
+        const chatButton = document.querySelector('.chat-button');
+        if (chatButton) {
+            chatButton.addEventListener('click', function() {
+                // Trigger Chatbase chat widget
+                window.chatbase("open");
+            });
+        }
+        
+        // Add hover effects
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.1)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.05)';
+            });
+        });
+    });
+
+    (function(){
+        if(!window.chatbase||window.chatbase("getState")!=="initialized"){
+            window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};
+            window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})
+        }
+        
+        // Custom configuration for Chatbase
+        window.chatbase("config", {
+            chatbotToken: "0MUFkxi0O6Lp47mM3kVKK",
+            domain: "www.chatbase.co",
+            buttonStyle: {
+                position: "fixed",
+                bottom: "20px",
+                right: "20px",
+                zIndex: 1000
+            },
+            chatStyle: {
+                // Custom chat UI styles
+                primaryColor: "#4361ee",
+                borderRadius: "10px",
+                fontFamily: "'Inter', sans-serif"
+            }
+        });
+        
+        const onLoad=function(){
+            const script=document.createElement("script");
+            script.src="https://www.chatbase.co/embed.min.js";
+            script.id="0MUFkxi0O6Lp47mM3kVKK";
+            script.domain="www.chatbase.co";
+            document.body.appendChild(script)
+        };
+        
+        if(document.readyState==="complete"){
+            onLoad()
+        }else{
+            window.addEventListener("load",onLoad)
+        }
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Details - {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Student Details</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'student_list' %}">Students</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ student.full_name }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="py-3">
+                        {% if profile and profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" alt="{{ student.full_name }}" 
+                             class="rounded-circle img-thumbnail mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                        {% else %}
+                        <div class="d-inline-block p-4 rounded-circle bg-light mb-3">
+                            <i class="fas fa-user-graduate fa-3x text-secondary"></i>
+                        </div>
+                        {% endif %}
+                        <h4>{{ student.full_name }}</h4>
+                        <p class="text-muted mb-2">Student</p>
+                        
+                        {% if student.is_active %}
+                        <span class="badge bg-success">Active Account</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive Account</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="border-top pt-3 mt-3 text-start">
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Email:</div>
+                            <div class="col-8">{{ student.email }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Phone:</div>
+                            <div class="col-8">{{ student.phone_number|default:"Not provided" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Joined:</div>
+                            <div class="col-8">{{ student.date_joined|date:"F j, Y" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Last Login:</div>
+                            <div class="col-8">
+                                {% if student.last_login %}
+                                {{ student.last_login|date:"F j, Y H:i" }}
+                                {% else %}
+                                Never logged in
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'student_update' student.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i> Edit Details
+                        </a>
+                        <a href="{% url 'student_delete' student.id %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash me-2"></i> Delete Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Student Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Student ID:</div>
+                        <div class="col-md-8">{{ profile.student_id|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Phone Number:</div>
+                        <div class="col-md-8">{{ profile.phone|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Date of Birth:</div>
+                        <div class="col-md-8">{{ profile.date_of_birth|date:"F j, Y"|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Gender:</div>
+                        <div class="col-md-8">{{ profile.get_gender_display|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">University:</div>
+                        <div class="col-md-8">{{ profile.university|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Course of Study:</div>
+                        <div class="col-md-8">{{ profile.course_of_study|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Address:</div>
+                        <div class="col-md-8">{{ profile.address|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Current Room:</div>
+                        <div class="col-md-8">
+                            {% if profile.room %}
+                                Room {{ profile.room.room_number }} in {{ profile.room.hostel.name }}
+                            {% else %}
+                                Not assigned to any room
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                        <h5>No Profile Data</h5>
+                        <p class="text-muted">This student hasn't completed their profile setup.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Housing Preferences</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Budget Range:</div>
+                        <div class="col-md-8">
+                            {% if profile.budget_min and profile.budget_max %}
+                                KES {{ profile.budget_min }} - {{ profile.budget_max }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Preferred Location:</div>
+                        <div class="col-md-8">{{ profile.preferred_location|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Room Preference:</div>
+                        <div class="col-md-8">{{ profile.get_room_preference_display|default:"Any" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Preferred Amenities:</div>
+                        <div class="col-md-8">
+                            {% if profile.preferred_amenities %}
+                                {{ profile.preferred_amenities }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Check if the student has StudentPreference model data -->
+                    {% if profile.preferences %}
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">Additional Preferences</h6>
+                                <div class="row mb-1">
+                                    <div class="col-md-5 text-muted">Detailed Budget Range:</div>
+                                    <div class="col-md-7">KES {{ profile.preferences.budget_min }} - {{ profile.preferences.budget_max }}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-md-5 text-muted">Preferred Location:</div>
+                                    <div class="col-md-7">{{ profile.preferences.location|default:"Not specified" }}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-md-5 text-muted">Room Type:</div>
+                                    <div class="col-md-7">{{ profile.preferences.get_room_type_display }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-5 text-muted">Preferred Amenities:</div>
+                                    <div class="col-md-7">
+                                        {% if profile.preferences.amenities.all %}
+                                            {% for amenity in profile.preferences.amenities.all %}
+                                                <span class="badge bg-light text-dark me-1">{{ amenity.name }}</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            Not specified
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                        <h5>No Preferences Set</h5>
+                        <p class="text-muted">This student hasn't specified any housing preferences yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Shortlisted Hostels Section -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Shortlisted Hostels</h5>
+                </div>
+                <div class="card-body">
+                    {% if student.shortlisted_hostels.all %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Hostel Name</th>
+                                    <th>Location</th>
+                                    <th>Owner</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hostel in student.shortlisted_hostels.all %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ hostel.name }}</td>
+                                    <td>{{ hostel.location }}</td>
+                                    <td>{{ hostel.owner.user.full_name }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                        <h5>No Shortlisted Hostels</h5>
+                        <p class="text-muted">This student hasn't shortlisted any hostels yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

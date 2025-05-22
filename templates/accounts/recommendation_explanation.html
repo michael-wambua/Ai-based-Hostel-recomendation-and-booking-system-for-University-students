@@ -1,0 +1,139 @@
+<!-- recommendation_explanation.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-robot me-2"></i>
+                        How Our AI Recommendations Work
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Our Smart Matching System</h5>
+                        <p>Our AI recommendation system analyzes your preferences and finds the best matches among
+                            available hostels. Here's how we calculate your personalized recommendations:</p>
+                    </div>
+
+                    <div class="recommendation-factors">
+                        <div class="factor-item">
+                            <div class="factor-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="factor-content">
+                                <h6>Budget Match (30%)</h6>
+                                <p>We look at your minimum and maximum budget and find hostels with room prices that fit
+                                    within your range.</p>
+                            </div>
+                        </div>
+
+                        <div class="factor-item">
+                            <div class="factor-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="factor-content">
+                                <h6>Location Match (25%)</h6>
+                                <p>We prioritize hostels in your preferred locations to minimize commute time and ensure
+                                    you're in your desired area.</p>
+                            </div>
+                        </div>
+
+                        <div class="factor-item">
+                            <div class="factor-icon">
+                                <i class="fas fa-door-open"></i>
+                            </div>
+                            <div class="factor-content">
+                                <h6>Room Type Match (20%)</h6>
+                                <p>Whether you prefer a single, double, or shared room, we find hostels offering your
+                                    preferred room type.</p>
+                            </div>
+                        </div>
+
+                        <div class="factor-item">
+                            <div class="factor-icon">
+                                <i class="fas fa-list-ul"></i>
+                            </div>
+                            <div class="factor-content">
+                                <h6>Amenities Match (25%)</h6>
+                                <p>We check how many of your preferred amenities (like WiFi, laundry, security) are
+                                    available at each hostel.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Match Score Colors</h5>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="match-percentage match-high me-3">85%+</span>
+                            <span>Excellent match - Highly recommended</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="match-percentage match-medium me-3">70-84%</span>
+                            <span>Good match - Worth considering</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="match-percentage match-low me-3">Below 70%</span>
+                            <span>Fair match - May not meet all your criteria</span>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <a href="{% url 'update_preferences' %}" class="btn btn-primary">
+                            <i class="fas fa-sliders-h me-2"></i>Update Your Preferences
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recommendation-factors {
+        margin: 2rem 0;
+    }
+
+    .factor-item {
+        display: flex;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .factor-item:last-child {
+        border-bottom: none;
+    }
+
+    .factor-icon {
+        width: 50px;
+        height: 50px;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .factor-icon i {
+        font-size: 1.25rem;
+        color: #6c757d;
+    }
+
+    .factor-content h6 {
+        margin-bottom: 0.5rem;
+    }
+
+    .factor-content p {
+        margin-bottom: 0;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Landlord Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
+    }
+    
+    .card-header {
+        background: linear-gradient(45deg, #4e73df, #224abe);
+        color: white;
+    }
+    
+    .btn-action {
+        margin: 0 2px;
+        border-radius: 6px;
+    }
+    
+    .verification-pending {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+    
+    .status-indicator {
+        width: 100%;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .status-verified {
+        background-color: #e6f7ee;
+        color: #1cc88a;
+    }
+    
+    .status-pending {
+        background-color: #fff8e6;
+        color: #f6c23e;
+    }
+    
+    .status-rejected {
+        background-color: #feebee;
+        color: #e74a3b;
+    }
+    
+    .status-unknown {
+        background-color: #e9ecef;
+        color: #858796;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .landlord-search {
+        border-radius: 50px;
+        padding-left: 20px;
+    }
+    
+    .dataTables_filter input {
+        border-radius: 50px;
+        padding-left: 15px;
+        border: 1px solid #d1d3e2;
+    }
+    
+    .icon-container {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Landlord Management</h1>
+        <a href="{% url 'admin_add_landlord' %}" class="btn btn-primary btn-icon-split shadow-sm">
+            <span class="icon text-white-50">
+                <i class="fas fa-plus-circle"></i>
+            </span>
+            <span class="text">Add New Landlord</span>
+        </a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Landlords</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ landlords|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon-container text-primary">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Pending Verification</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 {% if pending_count > 0 %}verification-pending{% endif %}">{{ pending_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon-container text-warning">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Approved</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ approved_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon-container text-success">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Rejected</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rejected_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon-container text-danger">
+                                <i class="fas fa-ban fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Landlords Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Landlord Directory</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="landlordsTable" width="100%" cellspacing="0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Hostel Name</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for landlord in landlords %}
+                        <tr>
+                            <td>{{ landlord.id }}</td>
+                            <td>
+                                <div class="font-weight-bold">{{ landlord.full_name }}</div>
+                            </td>
+                            <td>
+                                <a href="mailto:{{ landlord.email }}">{{ landlord.email }}</a>
+                            </td>
+                            <td>
+                                {% if landlord.phone_number %}
+                                    <a href="tel:{{ landlord.phone_number }}">{{ landlord.phone_number }}</a>
+                                {% else %}
+                                    <span class="text-muted">Not provided</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if landlord.landlord_profile %}
+                                    <strong>{{ landlord.landlord_profile.hostel_name|default:"Not specified" }}</strong>
+                                {% else %}
+                                    <span class="text-muted">No profile</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if landlord.is_verified %}
+                                    <div class="status-indicator status-verified">
+                                        <i class="fas fa-check-circle mr-1"></i> Verified
+                                    </div>
+                                {% elif landlord.landlord_profile.verification_status == 'PENDING' %}
+                                    <div class="status-indicator status-pending">
+                                        <i class="fas fa-clock mr-1"></i> Pending
+                                    </div>
+                                {% elif landlord.landlord_profile.verification_status == 'REJECTED' %}
+                                    <div class="status-indicator status-rejected">
+                                        <i class="fas fa-times-circle mr-1"></i> Rejected
+                                    </div>
+                                {% else %}
+                                    <div class="status-indicator status-unknown">
+                                        <i class="fas fa-question-circle mr-1"></i> Unknown
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'admin_edit_landlord' landlord.id %}" class="btn btn-sm btn-info btn-action" data-toggle="tooltip" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'admin_delete_landlord' landlord.id %}" class="btn btn-sm btn-danger btn-action" data-toggle="tooltip" title="Delete" onclick="return confirm('Are you sure you want to delete this landlord?');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% if landlord.landlord_profile.verification_status == 'PENDING' %}
+                                    <a href="{% url 'landlord_verification_detail' landlord.landlord_profile.id %}" class="btn btn-sm btn-warning btn-action" data-toggle="tooltip" title="Verify">
+                                        <i class="fas fa-clipboard-check"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <p>No landlords found in the system</p>
+                                    <a href="{% url 'admin_add_landlord' %}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus-circle mr-1"></i> Add your first landlord
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+        
+        // Initialize DataTable with enhanced features
+        $('#landlordsTable').DataTable({
+            "order": [[ 5, "asc" ]], // Sort by status
+            "responsive": true,
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "language": {
+                "search": "Search landlords:",
+                "zeroRecords": "No matching landlords found",
+                "info": "Showing _START_ to _END_ of _TOTAL_ landlords",
+                "lengthMenu": "Show _MENU_ landlords per page"
+            },
+            "dom": '<"row"<"col-md-6"l><"col-md-6"f>>rtip',
+            "initComplete": function() {
+                // Style the search box
+                $('.dataTables_filter input').addClass('landlord-search shadow-sm');
+                $('.dataTables_length select').addClass('shadow-sm');
+            }
+        });
+        
+        // Add fading effect for status indicators
+        setTimeout(function() {
+            $('.status-pending').parent().addClass('highlight-row');
+        }, 1000);
+    });
+</script>
+{% endblock %}

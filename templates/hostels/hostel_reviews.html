@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load review_tags %}
+
+{% block title %}Reviews for {{ hostel.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>Reviews for {{ hostel.name }}</h1>
+            
+            <div class="review-summary card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="display-2 fw-bold">{{ average_rating|floatformat:1 }}</div>
+                            <div class="rating-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= average_rating|floatformat:0 %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% elif forloop.counter <= average_rating|floatformat:0|add:"0.5" %}
+                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="text-muted">{{ review_count }} reviews</div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="rating-bars">
+                                {% for rating in "54321" %}
+                                    <div class="rating-bar-container d-flex align-items-center mb-2">
+                                        <div class="rating-label me-2">{{ rating }} stars</div>
+                                        <div class="progress flex-grow-1" style="height: 10px;">
+                                            {% with count=rating_distribution|get_item:rating %}
+                                            {% with percentage=count|percentage:review_count %}
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ percentage }}%" 
+                                                 aria-valuenow="{{ percentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                            {% endwith %}
+                                            {% endwith %}
+                                        </div>
+                                        <div class="rating-count ms-2">
+                                            {{ rating_distribution|get_item:rating }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="review-filters mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="get" class="d-flex flex-wrap align-items-center">
+                            <div class="me-3 mb-2">
+                                <label for="rating-filter" class="form-label mb-0 me-2">Filter by:</label>
+                                <select name="rating" id="rating-filter" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="">All ratings</option>
+                                    <option value="5" {% if current_filter == '5' %}selected{% endif %}>5 Stars</option>
+                                    <option value="4" {% if current_filter == '4' %}selected{% endif %}>4 Stars</option>
+                                    <option value="3" {% if current_filter == '3' %}selected{% endif %}>3 Stars</option>
+                                    <option value="2" {% if current_filter == '2' %}selected{% endif %}>2 Stars</option>
+                                    <option value="1" {% if current_filter == '1' %}selected{% endif %}>1 Star</option>
+                                </select>
+                            </div>
+                            <div class="me-3 mb-2">
+                                <label for="sort-by" class="form-label mb-0 me-2">Sort by:</label>
+                                <select name="sort" id="sort-by" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="recent" {% if current_sort == 'recent' %}selected{% endif %}>Most Recent</option>
+                                    <option value="highest" {% if current_sort == 'highest' %}selected{% endif %}>Highest Rating</option>
+                                    <option value="lowest" {% if current_sort == 'lowest' %}selected{% endif %}>Lowest Rating</option>
+                                </select>
+                            </div>
+                            {% if request.GET %}
+                                <div class="mb-2">
+                                    <a href="{% url 'hostel_reviews' hostel.id %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-times"></i> Clear Filters
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            {% if reviews %}
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                        <div class="card mb-4 review-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="reviewer-info">
+                                        <div class="d-flex align-items-center">
+                                            <div class="reviewer-avatar me-2">
+                                                {% if review.user.user_type == 'STUDENT' %}
+                                                    {% with profile=review.user.student_profile %}
+                                                        {% if profile and profile.profile_picture %}
+                                                            <img src="{{ profile.profile_picture.url }}" alt="Profile picture" class="rounded-circle" width="40">
+                                                        {% else %}
+                                                            <div class="default-avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                                {{ review.user.email|default:"U"|first|upper }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% elif review.user.user_type == 'LANDLORD' %}
+                                                    {% with profile=review.user.landlord_profile %}
+                                                        {% if profile and profile.profile_picture %}
+                                                            <img src="{{ profile.profile_picture.url }}" alt="Profile picture" class="rounded-circle" width="40">
+                                                        {% else %}
+                                                            <div class="default-avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                                {{ review.user.email|default:"U"|first|upper }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div>
+                                                <h5 class="mb-0">{{ review.user.get_full_name|default:review.user.username }}</h5>
+                                                <div class="text-muted small">{{ review.created_at|date:"M d, Y" }}</div>
+                                            </div>
+                                        </div>
+                                        {% if review.has_stayed %}
+                                            <div class="verified-stay mt-1">
+                                                <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Verified Stay</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="review-rating">
+                                        <div class="d-flex">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if review.cleanliness_rating or review.location_rating or review.value_rating or review.facility_rating %}
+                                    <div class="category-ratings mb-3">
+                                        <div class="row">
+                                            {% if review.cleanliness_rating %}
+                                                <div class="col-6 col-md-3 mb-2">
+                                                    <div class="small text-muted">Cleanliness</div>
+                                                    <div class="category-stars">
+                                                        {% for i in "12345" %}
+                                                            {% if forloop.counter <= review.cleanliness_rating %}
+                                                                <i class="fas fa-star text-warning small"></i>
+                                                            {% else %}
+                                                                <i class="far fa-star text-warning small"></i>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if review.location_rating %}
+                                                <div class="col-6 col-md-3 mb-2">
+                                                    <div class="small text-muted">Location</div>
+                                                    <div class="category-stars">
+                                                        {% for i in "12345" %}
+                                                            {% if forloop.counter <= review.location_rating %}
+                                                                <i class="fas fa-star text-warning small"></i>
+                                                            {% else %}
+                                                                <i class="far fa-star text-warning small"></i>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if review.value_rating %}
+                                                <div class="col-6 col-md-3 mb-2">
+                                                    <div class="small text-muted">Value</div>
+                                                    <div class="category-stars">
+                                                        {% for i in "12345" %}
+                                                            {% if forloop.counter <= review.value_rating %}
+                                                                <i class="fas fa-star text-warning small"></i>
+                                                            {% else %}
+                                                                <i class="far fa-star text-warning small"></i>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if review.facility_rating %}
+                                                <div class="col-6 col-md-3 mb-2">
+                                                    <div class="small text-muted">Facilities</div>
+                                                    <div class="category-stars">
+                                                        {% for i in "12345" %}
+                                                            {% if forloop.counter <= review.facility_rating %}
+                                                                <i class="fas fa-star text-warning small"></i>
+                                                            {% else %}
+                                                                <i class="far fa-star text-warning small"></i>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="review-content">
+                                    {% if review.comment %}
+                                        <p>{{ review.comment }}</p>
+                                    {% else %}
+                                        <p class="text-muted fst-italic">No comment provided.</p>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if review.images.exists %}
+                                    <div class="review-images mt-3">
+                                        <div class="row">
+                                            {% for image in review.images.all %}
+                                                <div class="col-4 col-md-3 mb-2">
+                                                    <a href="{{ image.image.url }}" target="_blank" class="review-image-link">
+                                                        <img src="{{ image.image.url }}" alt="{{ image.caption|default:'Review image' }}" class="img-thumbnail">
+                                                    </a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if is_owner %}
+                                <div class="mt-3">
+                                        {% if not review.replies.exists %}
+                                            <a href="{% url 'add_review_reply' review.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-reply"></i> Reply to this review
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if review.user == user %}
+                                    <div class="mt-3">
+                                        <a href="{% url 'edit_review' review.id %}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a href="{% url 'delete_review' review.id %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if review.replies.exists %}
+                                    <div class="owner-replies mt-4">
+                                        {% for reply in review.replies.all %}
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <div class="reviewer-avatar me-2">
+                                                            {% if reply.user.landlord_profile.profile_picture %}
+                                                                <img src="{{ reply.user.landlord_profile.profile_picture.url }}" alt="Profile picture"
+                                                                     class="rounded-circle" width="24">
+                                                            {% else %}
+                                                                <div class="default-avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                                                     style="width: 24px; height: 24px;">
+                                                                    {{ reply.user.username|first|upper }}
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        
+                                                        <div>
+                                                            <h6 class="mb-0">{{ reply.user.get_full_name|default:reply.user.username }}</h6>
+                                                            <div class="text-muted small">
+                                                                <span class="badge bg-secondary">Property Owner</span> · {{ reply.created_at|date:"M d, Y" }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <p class="mb-0">{{ reply.comment }}</p>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p>There are no reviews for this hostel yet.</p>
+                    <a href="{% url 'login' %}?next={% url 'add_review' hostel.id %}">Log in</a> to write the first review!
+                </div>
+            {% endif %}
+            
+            <div class="text-center mb-4">
+                <a href="{% url 'hostel_detail' hostel.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Hostel Details
+                </a>
+                {% if user.is_authenticated and user.user_type == 'STUDENT' %}
+                    <a href="{% url 'add_review' hostel.id %}" class="btn btn-primary">
+                        <i class="fas fa-star"></i> Write a Review
+                    </a>
+                {% endif %}
+            </div>
+            
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">About {{ hostel.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="hostel-thumbnail mb-3">
+                        {% if main_image %}
+                            <img src="{{ main_image.image.url }}" alt="{{ hostel.name }}" class="img-fluid rounded">
+                        {% else %}
+                            <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded" style="height: 150px;">
+                                <span class="text-muted">No image available</span>
+                            </div>
+                        {% endif %}
+
+                    </div>
+                    
+                    <p class="mb-2"><i class="fas fa-map-marker-alt text-primary me-2"></i> {{ hostel.address }}, {{ hostel.city }}</p>
+                    
+                    {% if hostel.distance_from_university %}
+                        <p class="mb-2"><i class="fas fa-university text-primary me-2"></i> {{ hostel.distance_from_university }} km from {{ hostel.university_name }}</p>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'hostel_detail' hostel.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Add lightbox functionality for review images
+    document.addEventListener('DOMContentLoaded', function() {
+        // If you're using a lightbox library like Fancybox, initialize it here
+    });
+</script>
+{% endblock %}

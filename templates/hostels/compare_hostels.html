@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Hostels{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4">Hostel Comparison</h2>
+    
+    {% if hostels|length < 2 %}
+        <div class="alert alert-warning">
+            Please select at least two hostels to compare.
+            <a href="{% url 'hostel_list' %}" class="btn btn-sm btn-primary ms-2">Back to Hostel List</a>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr class="table-primary">
+                        <th>Feature</th>
+                        {% for hostel in hostels %}
+                            <th>{{ hostel.name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Basic Info -->
+                    <tr>
+                        <th colspan="{{ hostels|length|add:1 }}" class="table-secondary">Basic Information</th>
+                    </tr>
+                    <tr>
+                        <td>Image</td>
+                        {% for hostel in hostels %}
+                            <td>
+                                {% if hostel.images.exists %}
+                                    <img src="{{ hostel.images.first.image.url }}" alt="{{ hostel.name }}" class="img-thumbnail" style="max-height: 100px;">
+                                {% else %}
+                                    <span class="text-muted">No image</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Address</td>
+                        {% for hostel in hostels %}
+                            <td>{{ hostel.address }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>City</td>
+                        {% for hostel in hostels %}
+                            <td>{{ hostel.city }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Distance from University</td>
+                        {% for hostel in hostels %}
+                            <td>{{ hostel.distance_from_university }} km</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>University</td>
+                        {% for hostel in hostels %}
+                            <td>{{ hostel.university_name }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Rating</td>
+                        {% for hostel in hostels %}
+                            <td>
+                                {% if hostel.avg_rating %}
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-1">{{ hostel.avg_rating|floatformat:1 }}</span>
+                                        <div class="text-warning">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= hostel.avg_rating|floatformat:0 %}
+                                                    <i class="fas fa-star"></i>
+                                                {% elif forloop.counter <= hostel.avg_rating|add:0.5|floatformat:0 %}
+                                                    <i class="fas fa-star-half-alt"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted ms-1">({{ hostel.review_count }})</small>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">No ratings</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Pricing -->
+                    <tr>
+                        <th colspan="{{ hostels|length|add:1 }}" class="table-secondary">Pricing</th>
+                    </tr>
+                    <tr>
+                        <td>Price Range</td>
+                        {% for hostel in hostels %}
+                            {% with min_price=hostel.rooms.order_by('price_per_month').first.price_per_month max_price=hostel.rooms.order_by('-price_per_month').first.price_per_month %}
+                                <td>
+                                    {% if min_price == max_price %}
+                                        {{ min_price|floatformat:2 }} per month
+                                    {% else %}
+                                        {{ min_price|floatformat:2 }} - {{ max_price|floatformat:2 }} per month
+                                    {% endif %}
+                                </td>
+                            {% endwith %}
+                        {% endfor %}
+                    </tr>
+                    
+                    <!-- Amenities -->
+                    <tr>
+                        <th colspan="{{ hostels|length|add:1 }}" class="table-secondary">Amenities</th>
+                    </tr>
+                    {% for amenity in all_amenities %}
+                        <tr>
+                            <td>{{ amenity.name }}</td>
+                            {% for hostel in hostels %}
+                                <td>
+                                    {% if amenity in hostel.amenities.all %}
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    
+                    <!-- Room Types -->
+                    <tr>
+                        <th colspan="{{ hostels|length|add:1 }}" class="table-secondary">Available Room Types</th>
+                    </tr>
+                    {% for hostel in hostels %}
+                        {% regroup hostel.rooms.all by room_type as room_type_list %}
+                    {% endfor %}
+                    
+                    {% with room_types=hostel.rooms.values_list('room_type__name', flat=True).distinct %}
+                        {% for room_type in room_types %}
+                            <tr>
+                                <td>{{ room_type }}</td>
+                                {% for hostel in hostels %}
+                                    <td>
+                                        {% if hostel.rooms.filter.room_type__name=room_type.exists %}
+                                            <i class="fas fa-check-circle text-success"></i>
+                                            ({{ hostel.rooms.filter.room_type__name=room_type.count }} available)
+                                        {% else %}
+                                            <i class="fas fa-times-circle text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    {% endwith %}
+                    
+                    <!-- Actions -->
+                    <tr>
+                        <td>Actions</td>
+                        {% for hostel in hostels %}
+                            <td>
+                                <a href="{% url 'hostel_detail' hostel_id=hostel.id %}" class="btn btn-sm btn-primary">View Details</a>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{% url 'hostel_list' %}" class="btn btn-secondary">Back to Hostel List</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

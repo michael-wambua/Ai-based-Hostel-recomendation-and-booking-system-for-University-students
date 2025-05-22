@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+{% block title %}Landlord Dashboard{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4 px-4">
+    <!-- Header with greeting -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold">Welcome, {{ request.user.full_name }}</h1>
+            <p class="text-muted">{{ today|date:"l, F d, Y" }}</p>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="badge bg-success me-2 px-3 py-2"><i class="fas fa-check-circle me-1"></i> Verified
+                Landlord</span>
+
+        </div>
+    </div>
+
+    <!-- Property Overview Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title fw-bold mb-0">Total Hostels</h5>
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="fas fa-building text-primary fa-lg"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 display-5 fw-bold">{{ hostels.count }}</h2>
+                    <p class="text-muted mb-0"><small>Properties under management</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title fw-bold mb-0">Total Rooms</h5>
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="fas fa-door-closed text-success fa-lg"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 display-5 fw-bold">{{ total_rooms }}</h2>
+                    <p class="text-muted mb-0"><small>{{ occupied_percentage }}% occupancy rate</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title fw-bold mb-0">Vacant Rooms</h5>
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                            <i class="fas fa-door-open text-warning fa-lg"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 display-5 fw-bold">{{ vacant_rooms }}</h2>
+                    <p class="text-muted mb-0"><small>Available for booking</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Tenant Information with reduced spacing -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-users text-primary me-2"></i>Tenant Information</h5>
+                        <span class="badge bg-primary px-3 py-2">{{ total_tenants }} Total</span>
+                    </div>
+                </div>
+                <div class="card-body p-0"> <!-- Removed padding for tighter layout -->
+                    <div class="list-group list-group-flush">
+                        {% for tenant in current_tenants|slice:":5" %}
+                        <div class="list-group-item py-2 px-3"> <!-- Reduced vertical padding -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    {% if tenant.student_profile.profile_picture %}
+                                    <img src="{{ tenant.student_profile.profile_picture.url }}"
+                                        class="rounded-circle me-2" width="35" height="35" alt="Profile picture">
+                                    {% else %}
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
+                                        style="width: 35px; height: 35px;">
+                                        {{ tenant.full_name|first }}
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ tenant.full_name }}</h6>
+                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                            {% with active_booking=tenant.bookings.last %}
+                                            {% if active_booking %}
+                                            {{ active_booking.room.room_number }}, {{ active_booking.room.hostel.name }}
+                                            {% else %}
+                                            No active room
+                                            {% endif %}
+                                            {% endwith %}
+                                        </small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-light text-dark border">{{ tenant.bookings.last.end_date|timeuntil}}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No tenants currently.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="card-footer bg-white border-0 text-center py-2">
+                        <a href="{% url 'landlord_tenants' %}" class="btn btn-sm btn-outline-primary">View All
+                            Tenants</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Overview -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-money-bill-wave text-success me-2"></i>Payments
+                            Overview</h5>
+                        <div>
+                            <select class="form-select form-select-sm">
+                                <option>Monthly</option>
+                                <option>Yearly</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="card h-100 border-0 bg-success bg-opacity-10">
+                                <div class="card-body py-3">
+                                    <small class="text-muted d-block">Total Income</small>
+                                    <h4 class="mb-0 fw-bold text-success">{{ total_income|floatformat:2 }} KES</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card h-100 border-0 bg-warning bg-opacity-10">
+                                <div class="card-body py-3">
+                                    <small class="text-muted d-block">Pending Payments</small>
+                                    <h4 class="white">{{ pending_payments_count }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3 fw-bold">Recent Transactions</h6>
+                    <div class="list-group list-group-flush">
+                        {% for payment in recent_payments %}
+                        <div
+                            class="list-group-item px-0 d-flex justify-content-between align-items-center border-bottom">
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ payment.invoice.booking.student.full_name }}</h6>
+                                <small class="text-muted">{{ payment.payment_date|date:"M d, Y" }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span
+                                    class="d-block fw-bold {% if payment.invoice.status == 'confirmed' %}text-success{% else %}text-warning{% endif %}">
+                                    {{ payment.invoice.amount|floatformat:2 }} KES
+                                </span>
+                                <small
+                                    class="badge {% if payment.invoice.status == 'confirmed' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ payment.invoice.get_status_display }}
+                                </small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No recent transactions.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'payments:landlord_payments' %}" class="btn btn-sm btn-outline-success">View All
+                            Transactions</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Booking Requests -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-calendar-check text-danger me-2"></i>Booking Requests</h5>
+                        <span class="badge bg-danger px-3 py-2">{{ new_booking_requests|length }} New</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for booking in new_booking_requests %}
+                        <div class="list-group-item px-0 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ booking.student.get_full_name }}</h6>
+                                    <small class="text-muted">{{ booking.room.hostel.name }}</small>
+                                </div>
+                                <span class="badge bg-danger">New</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ booking.booking_date|date:"M d, Y" }}</small>
+                                <div>
+                                    <a href="{% url 'bookings:approve_booking' booking.id %}"
+                                        class="btn btn-sm btn-success me-1"><i class="fas fa-check me-1"></i>Accept</a>
+                                    <a href="{% url 'bookings:reject_booking' booking.id %}"
+                                        class="btn btn-sm btn-outline-danger"><i class="fas fa-times me-1"></i>Decline</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No new booking requests.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'bookings:booking_requests' %}" class="btn btn-sm btn-outline-danger">Manage All
+                            Requests</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Reviews & Ratings -->
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-star text-warning me-2"></i>Reviews & Ratings</h5>
+                        <div>
+                            <span class="me-2 bg-warning bg-opacity-10 px-2 py-1 rounded">
+                                <i class="fas fa-star text-warning"></i>
+                                <strong>{{ average_rating|floatformat:1 }}</strong>
+                                <span class="text-muted">({{ total_reviews }})</span>
+                            </span>
+                            <select class="form-select form-select-sm d-inline-block w-auto">
+                                <option>All Properties</option>
+                                {% for hostel in hostels %}
+                                <option>{{ hostel.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0"> <!-- Removed padding for better visual -->
+                    <div class="list-group list-group-flush">
+                        {% for review in latest_reviews %}
+                        <div class="list-group-item px-3 py-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center">
+                                    {% if review.user.student_profile.profile_picture %}
+                                    <img src="{{ review.user.student_profile.profile_picture.url }}"
+                                        class="rounded-circle me-3" width="40" height="40" alt="Profile picture">
+                                    {% else %}
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3"
+                                        style="width: 40px; height: 40px;">
+                                        {{ review.user.full_name|first }}
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ review.user.full_name }}</h6>
+                                        <small class="text-muted">{{ review.hostel.name }}</small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="stars">
+                                        {% for i in "12345" %}
+                                        <i
+                                            class="fa{% if i|add:'0'|add:'-48' <= review.rating %}s{% else %}r{% endif %} fa-star text-warning"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                            <p class="mb-2">{{ review.comment }}</p>
+
+                            {% if review.replies.exists %}
+                            <div class="mt-3 ms-4 p-3 bg-light rounded">
+                                <small class="fw-bold text-primary">Your response:</small>
+                                <p class="mb-0 small">{{ review.replies.first.comment }}</p>
+                            </div>
+                            {% else %}
+                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-reply me-1"></i>Reply to
+                                review</button>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No reviews yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Management -->
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-user-cog text-primary me-2"></i>Account Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4 bg-light p-3 rounded">
+                        {% if request.user.landlord_profile.profile_picture %}
+                        <img src="{{ request.user.landlord_profile.profile_picture.url }}"
+                            class="rounded-circle me-3 border border-3 border-white shadow-sm" width="70" height="70"
+                            alt="Profile picture">
+                        {% else %}
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3 border border-3 border-white shadow-sm"
+                            style="width: 70px; height: 70px;">
+                            <i class="fas fa-user fa-lg"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-0 fw-bold">{{ request.user.full_name }}</h5>
+                            <p class="text-muted mb-1">{{ request.user.email }}</p>
+                            <span class="badge bg-success px-2 py-1"><i class="fas fa-check-circle me-1"></i>Verified
+                                Account</span>
+                        </div>
+                    </div>
+
+                    <div class="list-group list-group-flush mb-4">
+                        <a href="#"
+                            onclick="alert('Kindly contact the administrator to change your details.'); return false;"
+                            class="list-group-item list-group-item-action px-0 py-2 border-0 mb-1 rounded hover-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-user-edit me-2 text-primary"></i> Update Profile</span>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                    </div>
+
+
+                    <h6 class="mb-3 fw-bold">Recent Activities</h6>
+                    <div class="activity-timeline">
+                        {% for log in activity_logs %}
+                        <div class="activity-item d-flex">
+                            <div class="activity-dot bg-{{ log.color }} me-3"></div>
+                            <div class="activity-content mb-3">
+                                <small class="text-muted d-block">{{ log.timestamp|date:"M d, Y H:i" }}</small>
+                                <span>{{ log.message }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">No recent activities.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .activity-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-top: 6px;
+    }
+
+    .bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+    }
+
+    .bg-info {
+        background-color: #17a2b8 !important;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .bg-primary {
+        background-color: #0d6efd !important;
+    }
+
+    /* Hover effects for cards */
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+    }
+
+    /* Hover effect for list items */
+    .hover-item {
+        transition: background-color 0.2s ease;
+    }
+
+    .hover-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Custom styling for badges */
+    .badge {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    /* Display numbers in a more prominent way */
+    .display-5 {
+        font-size: 2.5rem;
+    }
+</style>
+{% endblock %}

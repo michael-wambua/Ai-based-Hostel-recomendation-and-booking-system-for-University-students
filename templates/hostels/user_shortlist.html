@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}My Shortlisted Hostels{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4">My Shortlisted Hostels</h1>
+    
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div id="shortlisted-hostels-container">
+        {% if shortlisted_hostels %}
+            <div class="row" id="hostels-row">
+                {% for hostel in shortlisted_hostels %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 hostel-card">
+                        {% if hostel.images.exists %}
+                        <div class="position-relative">
+                            {% if main_image %}
+                                <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ hostel.name }}">
+                            {% else %}
+                                <img src="{{ hostel.images.first.image.url }}" class="card-img-top" alt="{{ hostel.name }}">
+                            {% endif %}
+                            <div class="badge bg-primary position-absolute top-0 end-0 m-2">
+                                {% if hostel.avg_rating %}
+                                    <i class="bi bi-star-fill me-1"></i>{{ hostel.avg_rating|floatformat:1 }}
+                                    <small>({{ hostel.review_count }})</small>
+                                {% else %}
+                                    <i class="bi bi-star me-1"></i>No ratings
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="card-img-top bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 200px;">
+                            <i class="bi bi-building" style="font-size: 3rem;"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h5 class="card-title">{{ hostel.name }}</h5>
+                            <p class="card-text text-muted mb-1">
+                                <i class="bi bi-geo-alt-fill me-1"></i>{{ hostel.city }}
+                            </p>
+                            {% if hostel.university_name %}
+                            <p class="card-text text-muted mb-2">
+                                <i class="bi bi-buildings-fill me-1"></i>Near {{ hostel.university_name }}
+                            </p>
+                            {% endif %}
+                            
+                            {% if hostel.distance_from_university %}
+                            <p class="card-text mb-2">
+                                <i class="bi bi-rulers me-1"></i>{{ hostel.distance_from_university|floatformat:1 }} km from university
+                            </p>
+                            {% endif %}
+                            
+                            {% if hostel.rooms.exists %}
+                            <p class="card-text">
+                                <strong>From 
+                                    {% with min_price=hostel.rooms.all|dictsort:"price_per_month"|first %}
+                                        {% with max_price=hostel.rooms.all|dictsort:"-price_per_month"|first %}
+                                        <div class="text-primary fw-bold fs-5 mb-3">
+                                        {% if min_price.price_per_month == max_price.price_per_month %}
+                                        Ksh {{ min_price.price_per_month }}/month 
+                                        {% else %} 
+                                        Ksh {{ min_price.price_per_month }} - Ksh {{ max_price.price_per_month }}/month 
+                                        {% endif %}
+                                        </div>
+                                        {% endwith %} 
+                                    {% endwith %}
+                                </strong>
+                            </p>
+                            {% endif %}
+                            
+                            <div class="mt-2">
+                                {% for amenity in hostel.amenities.all|slice:":3" %}
+                                <span class="badge bg-light text-dark me-1 mb-1">{{ amenity.name }}</span>
+                                {% endfor %}
+                                {% if hostel.amenities.count > 3 %}
+                                <span class="badge bg-light text-dark me-1 mb-1">+{{ hostel.amenities.count|add:"-3" }} more</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-white">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <a href="{% url 'hostel_detail' hostel_id=hostel.id %}" class="btn btn-sm btn-primary">View Details</a>
+                                    <a href="{% url 'bookings:book_hostel' hostel.id %}" class="btn btn-sm btn-success">Book Now</a>
+                                </div>
+                                
+                                <!-- Remove button for shortlisted hostel -->
+                                <button class="btn btn-sm btn-outline-danger remove-shortlist" data-hostel-id="{{ hostel.id }}">
+                                    <i class="bi bi-heart-fill"></i>
+                                    <span>Remove</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div id="empty-shortlist-message" class="alert alert-info">
+                <p>You haven't shortlisted any hostels yet.</p>
+                <p>Browse through our hostels and click the heart icon to add them to your shortlist.</p>
+                <a href="{% url 'hostel_list' %}" class="btn btn-primary mt-2">Browse Hostels</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% csrf_token %}
+
+<!-- Hidden empty state message for JavaScript to use -->
+<div id="empty-state-template" style="display:none;">
+    <div class="alert alert-info">
+        <p>You haven't shortlisted any hostels yet.</p>
+        <p>Browse through our hostels and click the heart icon to add them to your shortlist.</p>
+        <a href="{% url 'hostel_list' %}" class="btn btn-primary mt-2">Browse Hostels</a>
+    </div>
+</div>
+
+<!-- JavaScript for removing shortlist -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch the shortlist count from the server
+        fetchShortlistedCount();
+        
+        // Listen for changes in the shortlist and update the badge accordingly
+        document.addEventListener('shortlistUpdated', function() {
+            fetchShortlistedCount();
+        });
+        
+        // Ensure the remove buttons are selected
+        const removeButtons = document.querySelectorAll('.remove-shortlist');
+        removeButtons.forEach(button => {
+            button.addEventListener('click', removeShortlist);
+        });
+    });
+    
+    function fetchShortlistedCount() {
+        fetch('{% url "get_shortlisted_count" %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const shortlistedCount = data.shortlisted_count;
+                    const badge = document.getElementById('shortlisted-badge');
+                    
+                    // Update the badge with the latest count
+                    if (shortlistedCount > 0) {
+                        badge.style.display = 'inline-block';
+                        badge.textContent = shortlistedCount;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                } else {
+                    console.error('Error fetching shortlist count:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching shortlist count:', error);
+            });
+    }
+    
+    function removeShortlist(event) {
+        const button = event.currentTarget;
+        const hostelId = button.getAttribute('data-hostel-id');
+        console.log('Removing hostel with ID:', hostelId); // Log the hostel ID
+        
+        const formData = new FormData();
+        formData.append('hostel_id', hostelId);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        fetch('{% url "remove_shortlist" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Backend response:', data); // Log the response from the server
+            if (data.status === 'success') {
+                // Find the card's parent column and remove it with animation
+                const cardColumn = button.closest('.col-md-6');
+                cardColumn.style.transition = 'opacity 0.5s ease';
+                cardColumn.style.opacity = '0';
+                
+                setTimeout(() => {
+                    cardColumn.remove();
+                    
+                    // Check if there are no more hostel cards
+                    const hostelRow = document.getElementById('hostels-row');
+                    if (hostelRow && hostelRow.children.length === 0) {
+                        // Show the empty state message
+                        const container = document.getElementById('shortlisted-hostels-container');
+                        hostelRow.remove(); // Remove the empty row
+                        
+                        // Clone the hidden template and show it
+                        const emptyState = document.getElementById('empty-state-template').firstElementChild.cloneNode(true);
+                        emptyState.style.display = 'block';
+                        container.appendChild(emptyState);
+                    }
+                    
+                    // Dispatch custom event to update shortlist count
+                    const event = new Event('shortlistUpdated');
+                    document.dispatchEvent(event);
+                }, 500);
+            } else {
+                console.error('Error:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }    
+    
+</script>
+
+{% endblock %}

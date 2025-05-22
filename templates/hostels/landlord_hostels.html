@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}My Hostels{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header Section with Stats -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="display-5 fw-bold mb-0">My Hostels</h1>
+            {% if hostels %}
+            <p class="text-muted mt-2">Managing {{ hostels|length }} properties</p>
+            {% endif %}
+        </div>
+        <div class="col-lg-4 d-flex justify-content-lg-end mt-10 mt-lg-0">
+            <a href="{% url 'add_hostel' %}" class="btn btn-primary px-4 py-2">
+                <i class="fas fa-plus-circle me-2"></i>Add New Hostel
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Main Content -->
+    {% if hostels %}
+        <div class="row g-4">
+            {% for hostel in hostels %}
+                <div class="col-xl-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm hover-shadow transition-300">
+                        <div class="position-relative">
+                            {% if hostel.images.exists %}
+                                {% with main_image=hostel.images.filter.first %}
+                                    <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ hostel.name }}" style="height: 220px; object-fit: cover;">
+                                {% endwith %}
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 220px;">
+                                    <i class="fas fa-home text-muted fa-3x"></i>
+                                </div>
+                            {% endif %}
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <span class="badge bg-primary rounded-pill px-3 py-2">
+                                    <i class="fas fa-door-open me-1"></i>{{ hostel.rooms.count }} Rooms
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            <h4 class="card-title mb-2">{{ hostel.name }}</h4>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                <p class="card-text text-muted mb-0">{{ hostel.address }}, {{ hostel.city }}</p>
+                            </div>
+                            
+                            <hr class="my-3">
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <a href="{% url 'hostel_detail' hostel_id=hostel.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                    <i class="fas fa-info-circle me-1"></i> Details
+                                </a>
+                                <a href="{% url 'edit_hostel' hostel_id=hostel.id %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'delete_hostel' hostel_id=hostel.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                            
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-success w-100 dropdown-toggle" type="button" id="dropdownMenuButton{{ hostel.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-plus-circle me-1"></i> Add New
+                                </button>
+                                <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton{{ hostel.id }}">
+                                    <li><a class="dropdown-item" href="{% url 'add_room' hostel_id=hostel.id %}">
+                                        <i class="fas fa-door-closed me-2"></i>Add Room
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'add_room_type' %}?hostel_id={{ hostel.id }}">
+                                        <i class="fas fa-tags me-2"></i>Add Room Type
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-8 col-lg-6">
+                <div class="card border-0 shadow-sm text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-home fa-4x text-muted"></i>
+                    </div>
+                    <h3 class="mb-3">No Hostels Yet</h3>
+                    <p class="text-muted mb-4">You haven't added any hostels to your account yet. Get started by adding your first property.</p>
+                    <a href="{% url 'add_hostel' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus-circle me-2"></i>Add Your First Hostel
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add custom CSS for animations and transitions -->
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .transition-300 {
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}

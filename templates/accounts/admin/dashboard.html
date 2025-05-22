@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header with welcome message -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 bg-white rounded-lg">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="fw-bold mb-0">Admin Dashboard</h1>
+              <p class="text-muted mb-0">Welcome back, Admin!</p>
+            </div>
+            <div class="text-end">
+              <p class="mb-0 text-muted"><i class="fas fa-calendar-alt me-2"></i>{% now "F j, Y" %}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Stats cards with improved styling -->
+  <div class="row g-3 mb-4">
+    <!-- Students card -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm border-0 rounded-lg h-100 overflow-hidden">
+        <div class="card-body p-0">
+          <div class="d-flex align-items-center">
+            <div class="bg-primary bg-gradient text-white p-4">
+              <i class="fas fa-user-graduate fa-2x"></i>
+            </div>
+            <div class="p-3">
+              <p class="text-muted mb-0 small">Total Students</p>
+              <h2 class="fw-bold mb-0">{{ students_count }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-light border-0 py-2">
+          <small class="text-muted"><i class="fas fa-chart-line me-1"></i> Active users</small>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Verified Landlords card -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm border-0 rounded-lg h-100 overflow-hidden">
+        <div class="card-body p-0">
+          <div class="d-flex align-items-center">
+            <div class="bg-success bg-gradient text-white p-4">
+              <i class="fas fa-check-circle fa-2x"></i>
+            </div>
+            <div class="p-3">
+              <p class="text-muted mb-0 small">Verified Landlords</p>
+              <h2 class="fw-bold mb-0">{{ verified_landlords }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-light border-0 py-2">
+          <small class="text-muted"><i class="fas fa-user-shield me-1"></i> Trusted partners</small>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pending Verifications card -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm border-0 rounded-lg h-100 overflow-hidden">
+        <div class="card-body p-0">
+          <div class="d-flex align-items-center">
+            <div class="bg-warning bg-gradient text-dark p-4">
+              <i class="fas fa-clock fa-2x"></i>
+            </div>
+            <div class="p-3">
+              <p class="text-muted mb-0 small">Pending Verifications</p>
+              <h2 class="fw-bold mb-0">{{ pending_verifications }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-light border-0 py-2">
+          <a href="{% url 'landlord_verification_list' %}" class="btn btn-sm btn-warning">Review Pending <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Total Hostels card -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card shadow-sm border-0 rounded-lg h-100 overflow-hidden">
+        <div class="card-body p-0">
+          <div class="d-flex align-items-center">
+            <div class="bg-info bg-gradient text-white p-4">
+              <i class="fas fa-building fa-2x"></i>
+            </div>
+            <div class="p-3">
+              <p class="text-muted mb-0 small">Total Hostels</p>
+              <h2 class="fw-bold mb-0">{{ hostels_count }}</h2>
+            </div>
+          </div>
+          <div class="card-footer bg-light">
+            <a href="{% url 'admin_hostel_list' %}" class="btn btn-sm btn-info">View All <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+        </div>
+        <div class="card-footer bg-light border-0 py-2">
+          <small class="text-muted"><i class="fas fa-home me-1"></i> Available accommodations</small>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main content area -->
+  <div class="row g-3">
+    <!-- Quick Actions panel -->
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-sm border-0 rounded-lg h-100">
+        <div class="card-header bg-white border-0 p-4">
+          <div class="d-flex align-items-center justify-content-between">
+            <h5 class="fw-bold mb-0"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h5>
+            <button class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Refresh"><i class="fas fa-sync"></i></button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            <a href="{% url 'landlord_verification_list' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+              <div>
+                <i class="fas fa-user-check text-warning me-2"></i>
+                <span>Pending Landlord Verifications</span>
+              </div>
+              <span class="badge bg-warning text-dark rounded-pill">{{ pending_verifications }}</span>
+            </a>
+            <a href="{% url 'student_list' %}" class="list-group-item list-group-item-action p-3">
+              <i class="fas fa-users text-primary me-2"></i>
+              <span>Manage Users</span>
+            </a>
+            <a href="{% url 'admin_hostel_list' %}" class="list-group-item list-group-item-action p-3">
+              <i class="fas fa-building text-success me-2"></i>
+              <span>Manage Hostels</span>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action p-3">
+              <i class="fas fa-chart-bar text-info me-2"></i>
+              <span>View Reports</span>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action p-3">
+              <i class="fas fa-cog text-secondary me-2"></i>
+              <span>System Settings</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Activity panel -->
+    <div class="col-md-6 col-lg-7">
+      <div class="card shadow-sm border-0 rounded-lg h-100">
+        <div class="card-header bg-white border-0 p-4">
+          <div class="d-flex align-items-center justify-content-between">
+            <h5 class="fw-bold mb-0"><i class="fas fa-history text-info me-2"></i>Recent Activity</h5>
+            <div>
+              <select class="form-select form-select-sm">
+                <option selected>All activities</option>
+                <option>User registrations</option>
+                <option>Verifications</option>
+                <option>System updates</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+          {% if recent_activity %}
+            <ul class="list-unstyled">
+              {% for activity in recent_activity %}
+                <li class="border-bottom pb-3 mb-3">{{ activity }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-center py-5">
+              <div class="mb-3">
+                <i class="fas fa-clipboard-list text-muted fa-3x"></i>
+              </div>
+              <h6 class="text-muted">No recent activity to display</h6>
+              <p class="text-muted small">System activities will appear here as they occur</p>
+            </div>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-light p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Last updated: {% now "g:i A" %}</small>
+            <a href="#" class="btn btn-sm btn-outline-secondary">View All Activity <i class="fas fa-chevron-right ms-1"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Additional Summary Row (Optional) -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-lg">
+        <div class="card-header bg-white border-0 p-3">
+          <h5 class="fw-bold mb-0"><i class="fas fa-chart-line text-primary me-2"></i>System Overview</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 border-end">
+              <div class="text-center p-3">
+                <h6 class="text-muted mb-2">Student to Landlord Ratio</h6>
+                <h2 class="fw-bold">{{ students_count }}:{{ landlords_count }}</h2>
+              </div>
+            </div>
+            <div class="col-md-4 border-end">
+              <div class="text-center p-3">
+                <h6 class="text-muted mb-2">Verification Rate</h6>
+                {% if landlords_count > 0 %}
+                  <h2 class="fw-bold">{{ verified_landlords|floatformat:0 }}%</h2>
+                {% else %}
+                  <h2 class="fw-bold">0%</h2>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="text-center p-3">
+                <h6 class="text-muted mb-2">System Status</h6>
+                <h2 class="fw-bold text-success">Healthy</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- Initialize Bootstrap tooltips -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  });
+</script>
+{% endblock %}

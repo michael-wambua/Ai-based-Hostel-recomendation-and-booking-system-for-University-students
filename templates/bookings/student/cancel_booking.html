@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Booking{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Cancel Booking</h1>
+    
+    <div class="alert alert-warning mt-4">
+        <h4 class="alert-heading">Are you sure you want to cancel this booking?</h4>
+        <p>Once cancelled, you may not be able to re-book the same room if someone else books it.</p>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Booking Details</h5>
+            <p class="card-text">
+                <strong>Hostel:</strong> {{ booking.room.hostel.name }}<br>
+                <strong>Room:</strong> {{ booking.room.room_number }}<br>
+                <strong>Check-in:</strong> {{ booking.start_date }}<br>
+                <strong>Check-out:</strong> {{ booking.end_date }}<br>
+            </p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Cancellation Reason</h5>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.cancellation_reason.id_for_label }}" class="form-label">Please tell us why you're cancelling</label>
+                    {{ form.cancellation_reason }}
+                    {% if form.cancellation_reason.errors %}
+                        <div class="text-danger">{{ form.cancellation_reason.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                <a href="{% url 'bookings:student_dashboard' %}" class="btn btn-secondary">Go Back</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
