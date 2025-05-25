@@ -8,7 +8,7 @@
 
 ## 🧠 Overview
 
-**StaySmart** is a cutting-edge, AI-powered hostel booking platform built as a collaborative group project. Designed with students and travelers in mind, StaySmart simplifies the process of discovering, comparing, and booking verified hostels.
+**StaySmart** is a cutting-edge, AI-powered hostel booking platform built as a individual project. Designed with students and travelers in mind, StaySmart simplifies the process of discovering, comparing, and booking verified hostels.
 
 By integrating **Artificial Intelligence (AI)** and **Machine Learning (ML)**, the system provides tailored hostel recommendations based on user preferences, behavior, and sentiment analysis of past reviews.
 
